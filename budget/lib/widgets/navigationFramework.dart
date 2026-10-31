@@ -50,7 +50,6 @@ import 'package:budget/widgets/openContainerNavigation.dart';
 import 'package:budget/widgets/openPopup.dart';
 import 'package:budget/widgets/openSnackbar.dart';
 import 'package:budget/widgets/outlinedButtonStacked.dart';
-import 'package:budget/widgets/ratingPopup.dart';
 import 'package:budget/widgets/selectAmount.dart';
 import 'package:budget/widgets/selectChips.dart';
 import 'package:budget/widgets/selectedTransactionsAppBar.dart';
@@ -414,10 +413,6 @@ class PageNavigationFrameworkState extends State<PageNavigationFramework> {
       await initializeNotificationsPlatform();
 
       bool isChangelogShown = showChangelog(context);
-      bool isRatingPopupShown = false;
-      if (isChangelogShown == false) {
-        isRatingPopupShown = openRatingPopupCheck(context);
-      }
 
       await setDailyNotifications(context);
       await initializeDefaultDatabase();
@@ -429,7 +424,7 @@ class PageNavigationFrameworkState extends State<PageNavigationFramework> {
       }
 
       // Do this after cloud functions attempt (i.e. if user is not signed in we can show it)
-      if (isRatingPopupShown == false && isChangelogShown == false) {
+      if (isChangelogShown == false) {
         openBackupReminderPopupCheck(context);
       }
 
