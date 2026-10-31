@@ -1,4 +1,3 @@
-import 'package:budget/colors.dart';
 import 'package:budget/database/generatePreviewData.dart';
 import 'package:budget/database/tables.dart';
 import 'package:budget/functions.dart';
@@ -18,15 +17,11 @@ import 'package:budget/pages/editHomePage.dart';
 import 'package:budget/pages/settingsPage.dart';
 import 'package:budget/pages/homePage/homePageCreditDebts.dart';
 import 'package:budget/struct/settings.dart';
-import 'package:budget/widgets/animatedExpanded.dart';
-import 'package:budget/widgets/button.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
 import 'package:budget/widgets/navigationFramework.dart';
 import 'package:budget/widgets/openBottomSheet.dart';
-import 'package:budget/widgets/ratingPopup.dart';
 import 'package:budget/widgets/selectedTransactionsAppBar.dart';
 import 'package:budget/widgets/util/keepAliveClientMixin.dart';
-import 'package:budget/widgets/textWidgets.dart';
 import 'package:budget/widgets/transactionEntry/swipeToSelectTransactions.dart';
 import 'package:budget/widgets/viewAllTransactionsButton.dart';
 import 'package:budget/widgets/navigationSidebar.dart';
@@ -38,7 +33,6 @@ import 'package:budget/widgets/linearGradientFadedEdges.dart';
 import 'package:budget/widgets/pullDownToRefreshSync.dart';
 import 'package:budget/widgets/util/rightSideClipper.dart';
 import 'package:flutter/services.dart';
-import 'package:budget/widgets/util/checkWidgetLaunch.dart';
 import 'package:flutter/foundation.dart';
 
 class HomePage extends StatefulWidget {
@@ -327,7 +321,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         : SizedBox(height: 5),
                     // Not full screen
                     if (enableDoubleColumn(context) != true) ...[
-                      KeepAliveClientMixin(child: HomePageRatingBox()),
                       for (String sectionKey
                           in appStateSettings["homePageOrder"])
                         homePageSections[sectionKey] ?? SizedBox.shrink(),
@@ -411,144 +404,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ],
         ),
       ),
-    );
-  }
-}
-
-class HomePageRatingBox extends StatefulWidget {
-  const HomePageRatingBox({super.key});
-
-  @override
-  State<HomePageRatingBox> createState() => _HomePageRatingBoxState();
-}
-
-class _HomePageRatingBoxState extends State<HomePageRatingBox> {
-  bool hidden = true;
-
-  @override
-  void initState() {
-    if ((appStateSettings["numLogins"] + 1) % 13 == 0 &&
-        appStateSettings["dismissedStoreRating"] != true &&
-        appStateSettings["openedStoreRating"] != true) {
-      setState(() {
-        hidden = false;
-      });
-    }
-    super.initState();
-  }
-
-  hide() {
-    setState(() {
-      hidden = true;
-    });
-    updateSettings("dismissedStoreRating", true, updateGlobalState: true);
-  }
-
-  open() {
-    setState(() {
-      hidden = true;
-    });
-    updateSettings("openedStoreRating", true, updateGlobalState: true);
-    inAppReview.openStoreListing(
-      appStoreId: "6463662930",
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (kIsWeb) return SizedBox.shrink();
-    return AnimatedSizeSwitcher(
-      child: hidden
-          ? Container(
-              key: ValueKey(1),
-            )
-          : Padding(
-              key: ValueKey(2),
-              padding: const EdgeInsetsDirectional.only(bottom: 13),
-              child: Container(
-                padding: EdgeInsetsDirectional.only(
-                    start: 15, end: 15, bottom: 18, top: 18),
-                margin: EdgeInsetsDirectional.symmetric(horizontal: 13),
-                decoration: BoxDecoration(
-                  borderRadius:
-                      BorderRadiusDirectional.all(Radius.circular(15)),
-                  color: getColor(context, "lightDarkAccentHeavyLight"),
-                  boxShadow: boxShadowCheck(boxShadowGeneral(context)),
-                ),
-                child: Column(
-                  children: [
-                    TextFont(
-                      text: "enjoying-cashew-question".tr(),
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      textAlign: TextAlign.center,
-                      maxLines: 3,
-                    ),
-                    SizedBox(height: 7),
-                    Padding(
-                      padding:
-                          const EdgeInsetsDirectional.symmetric(horizontal: 10),
-                      child: TextFont(
-                        text: "consider-rating".tr(),
-                        fontSize: 16,
-                        textAlign: TextAlign.center,
-                        maxLines: 5,
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    ScalingStars(
-                      selectedStars: 5,
-                      onTap: (i) {
-                        if (i >= 4) {
-                          open();
-                        } else {
-                          shareFeedback(
-                            "from-homepage-stars",
-                            "rating",
-                            selectedStars: i,
-                          );
-                          hide();
-                        }
-                      },
-                      size: 50,
-                      color: getColor(context, "starYellow"),
-                      loop: true,
-                      loopDelay: Duration(milliseconds: 1900),
-                    ),
-                    SizedBox(height: 15),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Opacity(
-                            opacity: 0.7,
-                            child: Button(
-                              label: "no-thanks".tr(),
-                              onTap: () {
-                                hide();
-                              },
-                              expandedLayout: true,
-                              color: Theme.of(context).colorScheme.tertiary,
-                              textColor:
-                                  Theme.of(context).colorScheme.onTertiary,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: Button(
-                            label: "rate".tr(),
-                            onTap: () {
-                              open();
-                            },
-                            expandedLayout: true,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
     );
   }
 }

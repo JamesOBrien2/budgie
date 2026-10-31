@@ -16,7 +16,6 @@ import 'package:budget/widgets/openPopup.dart';
 import 'package:budget/widgets/openSnackbar.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
 import 'package:budget/database/generatePreviewData.dart';
-import 'package:budget/widgets/ratingPopup.dart';
 import 'package:budget/widgets/settingsContainers.dart';
 import 'package:budget/widgets/textInput.dart';
 import 'package:budget/widgets/textWidgets.dart';
@@ -416,20 +415,6 @@ class DebugPage extends StatelessWidget {
           icon: appStateSettings["outlinedIcons"]
               ? Icons.animation_outlined
               : Icons.animation_rounded,
-        ),
-        FutureBuilder<bool>(
-          future: inAppReview.isAvailable(),
-          builder: (context, snapshot) {
-            return SettingsContainer(
-              icon: Icons.store,
-              title: "Test store review integration",
-              description: "Available: " + snapshot.data.toString(),
-              onTap: () async {
-                if (await inAppReview.isAvailable())
-                  inAppReview.requestReview();
-              },
-            );
-          },
         ),
         SettingsContainerSwitch(
           onSwitched: (value) async {

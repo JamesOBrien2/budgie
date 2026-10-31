@@ -21,10 +21,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:budget/colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:in_app_review/in_app_review.dart';
 import 'package:budget/widgets/framework/popupFramework.dart';
 
-final InAppReview inAppReview = InAppReview.instance;
 
 bool openRatingPopupCheck(BuildContext context) {
   // Disable this for now, we have the new in-home page review popup
@@ -207,9 +205,6 @@ Future<bool> shareFeedback(String feedbackText, String feedbackType,
   bool error = false;
 
   try {
-    if ((selectedStars ?? 0) >= 4) {
-      if (await inAppReview.isAvailable()) inAppReview.requestReview();
-    }
   } catch (e) {
     print(e.toString());
     error = true;
