@@ -5,7 +5,6 @@ import 'package:budget/struct/keyboardIntents.dart';
 import 'package:budget/struct/logging.dart';
 import 'package:budget/widgets/fadeIn.dart';
 import 'package:budget/struct/languageMap.dart';
-import 'package:budget/struct/initializeBiometrics.dart';
 import 'package:budget/widgets/util/appLinks.dart';
 import 'package:budget/widgets/util/onAppResume.dart';
 import 'package:budget/widgets/util/watchForDayChange.dart';
@@ -129,13 +128,11 @@ class App extends StatelessWidget {
         Widget mainWidget = OnAppResume(
           updateGlobalAppLifecycleState: true,
           onAppResume: () {},
-          child: InitializeBiometrics(
-            child: InitializeAppLinks(
-              child: WatchForDayChange(
-                child: WatchSelectedWalletPk(
-                  child: WatchAllWallets(
-                    child: child ?? SizedBox.shrink(),
-                  ),
+          child: InitializeAppLinks(
+            child: WatchForDayChange(
+              child: WatchSelectedWalletPk(
+                child: WatchAllWallets(
+                  child: child ?? SizedBox.shrink(),
                 ),
               ),
             ),

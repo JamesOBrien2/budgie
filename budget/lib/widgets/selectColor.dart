@@ -11,7 +11,6 @@ import 'package:budget/widgets/linearGradientFadedEdges.dart';
 import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:budget/widgets/settingsContainers.dart';
 import 'package:budget/widgets/tappable.dart';
-import 'package:budget/widgets/util/checkWidgetLaunch.dart';
 import 'package:budget/widgets/util/keepAliveClientMixin.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -195,7 +194,6 @@ class _SelectColorState extends State<SelectColor> {
                       await updateSettings(
                           "accentColor", await getAccentColorSystemString(),
                           updateGlobalState: true);
-                      updateWidgetColorsAndText(context);
                     } else {
                       widget.setSelectedColor!(selectedColor);
                     }

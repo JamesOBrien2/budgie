@@ -43,11 +43,9 @@ import 'package:budget/widgets/selectAmount.dart';
 import 'package:budget/widgets/selectColor.dart';
 import 'package:budget/widgets/settingsContainers.dart';
 import 'package:budget/pages/walletDetailsPage.dart';
-import 'package:budget/struct/initializeBiometrics.dart';
 import 'package:budget/widgets/sliderSelector.dart';
 import 'package:budget/widgets/tappable.dart';
 import 'package:budget/widgets/textWidgets.dart';
-import 'package:budget/widgets/util/checkWidgetLaunch.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:budget/main.dart';
@@ -474,7 +472,6 @@ class SettingsPageContent extends StatelessWidget {
                                 updateGlobalState: true);
                             updateSettings("accentSystemColor", false,
                                 updateGlobalState: true);
-                            updateWidgetColorsAndText(context);
                           },
                           useSystemColorPrompt: true,
                         ),
@@ -526,8 +523,6 @@ class SettingsPageContent extends StatelessWidget {
                     : Icons.notifications_rounded,
               )
             : SizedBox.shrink(),
-
-        BiometricsSettingToggle(),
 
         SettingsContainer(
           title: "language".tr(),
@@ -660,7 +655,6 @@ class _ThemeSettingsDropdownState extends State<ThemeSettingsDropdown> {
         }
         setState(() {});
         await updateSettings("theme", value, updateGlobalState: true);
-        updateWidgetColorsAndText(context);
       },
       getLabel: (item) {
         return item.tr();
@@ -697,91 +691,12 @@ class MoreOptionsPagePreferences extends StatelessWidget {
         ObjectiveSettings(),
         SettingsHeader(title: "titles".tr()),
         TitlesSettings(),
-        SettingsHeader(title: "widgets".tr()),
-        WidgetSettings(),
         SettingsHeader(title: "formatting".tr()),
         NumberFormattingSetting(),
         PercentagePrecisionSetting(),
         Time24HourFormatSetting(),
         FirstDayOfWeekSetting(updateHomePage: true),
         NumberPadFormatSetting(),
-      ],
-    );
-  }
-}
-
-class WidgetSettings extends StatelessWidget {
-  const WidgetSettings({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    if (getPlatform(ignoreEmulation: true) != PlatformOS.isAndroid)
-      return SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SettingsContainer(
-          title: "net-worth-total-widget".tr(),
-          description: "select-accounts-and-time-period".tr(),
-          onTap: () async {
-            await openNetWorthSettings(context);
-            // We need to resfresh the widget rendering since it exists on the homepage!
-            homePageStateKey.currentState?.refreshState();
-          },
-          icon: appStateSettings["outlinedIcons"]
-              ? Icons.area_chart_outlined
-              : Icons.area_chart_rounded,
-        ),
-        SettingsContainerDropdown(
-          title: "widget-theme".tr(),
-          icon: appStateSettings["outlinedIcons"]
-              ? Icons.contrast_outlined
-              : Icons.contrast_rounded,
-          initial: appStateSettings["widgetTheme"].toString(),
-          items: ["app", "light", "dark"],
-          onChanged: (value) async {
-            if (value == "app") value = "system";
-            await updateSettings("widgetTheme", value,
-                updateGlobalState: false);
-            updateWidgetColorsAndText(context);
-          },
-          getLabel: (item) {
-            return item.tr();
-          },
-        ),
-        SettingsContainer(
-          title: "widget-background-opacity".tr(),
-          icon: appStateSettings["outlinedIcons"]
-              ? Icons.blur_on_outlined
-              : Icons.blur_on_rounded,
-          descriptionWidget: Container(
-            height: 28,
-            padding: EdgeInsetsDirectional.only(end: 10),
-            child: SliderTheme(
-              data: SliderThemeData(
-                trackShape: CustomTrackShape(),
-                thumbShape: RoundSliderThumbShape(enabledThumbRadius: 9),
-              ),
-              child: SliderSelector(
-                min: 0,
-                max: 1,
-                initialValue:
-                    (appStateSettings["widgetOpacity"] ?? 1).toDouble(),
-                onChange: (value) {},
-                divisions: 20,
-                onFinished: (value) {
-                  updateSettings("widgetOpacity", value,
-                      updateGlobalState: false);
-                  updateWidgetColorsAndText(context);
-                },
-                displayFilter: (double number) {
-                  return convertToPercent(number * 100, numberDecimals: 0);
-                },
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -802,80 +717,6 @@ class CustomTrackShape extends RoundedRectSliderTrackShape {
         offset.dy + (parentBox.size.height - (trackHeight ?? 0)) / 2;
     final trackWidth = parentBox.size.width;
     return Rect.fromLTWH(trackLeft, trackTop, trackWidth, (trackHeight ?? 0));
-  }
-}
-
-class BiometricsSettingToggle extends StatefulWidget {
-  const BiometricsSettingToggle({super.key});
-
-  @override
-  State<BiometricsSettingToggle> createState() =>
-      _BiometricsSettingToggleState();
-}
-
-class _BiometricsSettingToggleState extends State<BiometricsSettingToggle> {
-  bool isLocked = appStateSettings["requireAuth"];
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        authAvailable || isLocked
-            ? SettingsContainerSwitch(
-                title: "biometric-lock".tr(),
-                description: "biometric-lock-description".tr(),
-                onSwitched: (value) async {
-                  AuthResult authResult =
-                      await checkBiometrics(checkAlways: true);
-                  if (authResult == AuthResult.error) {
-                    openPopup(
-                      context,
-                      icon: appStateSettings["outlinedIcons"]
-                          ? Icons.warning_outlined
-                          : Icons.warning_rounded,
-                      title: getPlatform() == PlatformOS.isIOS
-                          ? "biometrics-disabled".tr()
-                          : "biometrics-error".tr(),
-                      description: getPlatform() == PlatformOS.isIOS
-                          ? "biometrics-disabled-description".tr()
-                          : "biometrics-error-description".tr(),
-                      onCancelLabel:
-                          getPlatform() == PlatformOS.isIOS ? "ok".tr() : null,
-                      onCancel: () {
-                        popRoute(context);
-                      },
-                      onSubmitLabel: getPlatform() == PlatformOS.isIOS
-                          ? "open-settings".tr()
-                          : "ok".tr(),
-                      onSubmit: () {
-                        updateSettings("requireAuth", false,
-                            updateGlobalState: false);
-                        setState(() {
-                          isLocked = false;
-                        });
-                        popRoute(context);
-                      },
-                    );
-                  } else if (authResult == AuthResult.authenticated) {
-                    updateSettings("requireAuth", value,
-                        updateGlobalState: false);
-                    setState(() {
-                      isLocked = value;
-                    });
-                  }
-                  return authResult == AuthResult.authenticated;
-                },
-                initialValue: isLocked,
-                icon: isLocked
-                    ? appStateSettings["outlinedIcons"]
-                        ? Icons.lock_outlined
-                        : Icons.lock_rounded
-                    : appStateSettings["outlinedIcons"]
-                        ? Icons.lock_open_outlined
-                        : Icons.lock_open_rounded,
-              )
-            : SizedBox.shrink(),
-      ],
-    );
   }
 }
 
