@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'package:budget/functions.dart';
 import 'package:budget/main.dart';
-import 'package:budget/pages/accountsPage.dart';
 import 'package:budget/pages/addTransactionPage.dart';
 import 'package:budget/pages/debugPage.dart';
 import 'package:budget/pages/detailedChangelogPage.dart';
@@ -10,13 +9,11 @@ import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/languageMap.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/widgets/button.dart';
-import 'package:budget/widgets/framework/popupFramework.dart';
 import 'package:budget/widgets/moreIcons.dart';
 import 'package:budget/widgets/navigationSidebar.dart';
 import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:budget/widgets/openPopup.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
-import 'package:budget/widgets/ratingPopup.dart';
 import 'package:budget/widgets/showChangelog.dart';
 import 'package:budget/widgets/tappable.dart';
 import 'package:budget/widgets/textWidgets.dart';
@@ -760,54 +757,6 @@ void deleteAllDataFlow(BuildContext context) {
     icon: appStateSettings["outlinedIcons"]
         ? Icons.warning_outlined
         : Icons.warning_rounded,
-    onExtraLabel2: "erase-synced-data-and-cloud-backups".tr(),
-    onExtra2: () {
-      popRoute(context);
-      openBottomSheet(
-        context,
-        PopupFramework(
-          title: "erase-cloud-data".tr(),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsetsDirectional.only(
-                  bottom: 18,
-                  start: 5,
-                  end: 5,
-                ),
-                child: TextFont(
-                  text: "erase-cloud-data-description".tr(),
-                  fontSize: 16.5,
-                  textAlign: TextAlign.center,
-                  maxLines: 10,
-                ),
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: SyncCloudBackupButton(
-                      onTap: () async {
-                        popRoute(context);
-                        pushRoute(context, AccountsPage());
-                      },
-                    ),
-                  ),
-                  SizedBox(width: 18),
-                  Expanded(
-                    child: BackupsCloudBackupButton(
-                      onTap: () async {
-                        popRoute(context);
-                        pushRoute(context, AccountsPage());
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      );
-    },
     onSubmit: () async {
       popRoute(context);
       openPopup(
@@ -868,17 +817,6 @@ class AboutLinks extends StatelessWidget {
                   ? Icons.live_help_outlined
                   : Icons.live_help_rounded,
               text: "guide-and-faq".tr(),
-            ),
-            const HorizontalBreak(padding: EdgeInsetsDirectional.zero),
-            _buildTappable(
-              context: context,
-              isExternalLink: false,
-              onTap: () =>
-                  openBottomSheet(context, RatingPopup(), fullSnap: true),
-              icon: appStateSettings["outlinedIcons"]
-                  ? Icons.rate_review_outlined
-                  : Icons.rate_review_rounded,
-              text: "feedback".tr(),
             ),
             const HorizontalBreak(padding: EdgeInsetsDirectional.zero),
             _buildTappable(

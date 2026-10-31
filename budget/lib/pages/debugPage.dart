@@ -10,13 +10,10 @@ import 'package:budget/struct/settings.dart';
 import 'package:budget/widgets/button.dart';
 import 'package:budget/widgets/dropdownSelect.dart';
 import 'package:budget/widgets/globalSnackbar.dart';
-import 'package:budget/widgets/navigationFramework.dart';
-import 'package:budget/widgets/notificationsSettings.dart';
 import 'package:budget/widgets/openPopup.dart';
 import 'package:budget/widgets/openSnackbar.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
 import 'package:budget/database/generatePreviewData.dart';
-import 'package:budget/widgets/ratingPopup.dart';
 import 'package:budget/widgets/settingsContainers.dart';
 import 'package:budget/widgets/textInput.dart';
 import 'package:budget/widgets/textWidgets.dart';
@@ -417,20 +414,6 @@ class DebugPage extends StatelessWidget {
               ? Icons.animation_outlined
               : Icons.animation_rounded,
         ),
-        FutureBuilder<bool>(
-          future: inAppReview.isAvailable(),
-          builder: (context, snapshot) {
-            return SettingsContainer(
-              icon: Icons.store,
-              title: "Test store review integration",
-              description: "Available: " + snapshot.data.toString(),
-              onTap: () async {
-                if (await inAppReview.isAvailable())
-                  inAppReview.requestReview();
-              },
-            );
-          },
-        ),
         SettingsContainerSwitch(
           onSwitched: (value) async {
             updateSettings("incognitoKeyboard", value,
@@ -583,13 +566,6 @@ class DebugPage extends StatelessWidget {
                 },
               ),
               SizedBox(height: 20),
-              Button(
-                  label: "Force full sync",
-                  onTap: () async {
-                    sharedPreferences.setString(
-                        "dateOfLastSyncedWithClient", "{}");
-                    runAllCloudFunctions(context);
-                  }),
               SizedBox(height: 20),
               Button(
                 expandedLayout: true,
@@ -659,14 +635,6 @@ class DebugPage extends StatelessWidget {
                         ],
                       ),
                     );
-                  }),
-              SizedBox(height: 20),
-              Button(
-                  label: "Send Notification",
-                  onTap: () async {
-                    initializeNotificationsPlatform();
-                    scheduleDailyNotification(context, TimeOfDay.now(),
-                        scheduleNowDebug: true);
                   }),
               SizedBox(height: 20),
               Button(

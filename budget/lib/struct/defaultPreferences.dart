@@ -4,7 +4,6 @@ import 'package:budget/functions.dart';
 import 'package:budget/pages/homePage/homePageLineGraph.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/settings.dart';
-import 'package:budget/widgets/notificationsSettings.dart';
 import 'package:budget/widgets/periodCyclePicker.dart';
 import 'package:budget/widgets/selectAmount.dart';
 import 'package:drift/drift.dart' show Value;
@@ -145,11 +144,6 @@ Future<Map<String, dynamic>> getDefaultPreferences() async {
     "autoLoginDisabledOnWebTip": true,
     "forceAutoLogin": false,
     "allSpendingPageTip": true,
-    "notifications": true,
-    "notificationHour": 20,
-    "notificationMinute": 0,
-    "notificationsUpcomingTransactions": true,
-    "notificationsReminderType": ReminderNotificationType.IfAppNotOpened.index,
     "appOpenedHour": DateTime.now().hour,
     "appOpenedMinute": DateTime.now().minute,
     "materialYou": supportsSystemColor(),
@@ -198,11 +192,7 @@ Future<Map<String, dynamic>> getDefaultPreferences() async {
     "showMethodAdded": false,
     "showBackupLimit": false,
     "outlinedIcons": false,
-    "premiumPopupAddTransactionCount": -5,
-    "premiumPopupAddTransactionLastShown": DateTime.now().toString(),
-    "premiumPopupFreeSeen": false,
     "previewDemo": false,
-    "purchaseID": null,
     "showAccountLabelTagInTransactionEntry": false,
     "showCurrencyLabel": false,
     "showTransactionsMonthlySpendingSummary": true,

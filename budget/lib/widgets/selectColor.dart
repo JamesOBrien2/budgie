@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:budget/colors.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/pages/addTransactionPage.dart';
-import 'package:budget/pages/premiumPage.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/widgets/button.dart';
 import 'package:budget/widgets/colorPicker.dart';
@@ -11,7 +10,6 @@ import 'package:budget/widgets/linearGradientFadedEdges.dart';
 import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:budget/widgets/settingsContainers.dart';
 import 'package:budget/widgets/tappable.dart';
-import 'package:budget/widgets/util/checkWidgetLaunch.dart';
 import 'package:budget/widgets/util/keepAliveClientMixin.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -195,7 +193,6 @@ class _SelectColorState extends State<SelectColor> {
                       await updateSettings(
                           "accentColor", await getAccentColorSystemString(),
                           updateGlobalState: true);
-                      updateWidgetColorsAndText(context);
                     } else {
                       widget.setSelectedColor!(selectedColor);
                     }
@@ -486,10 +483,10 @@ class _ColorIconCustomState extends State<ColorIconCustom> {
     );
     return Tooltip(
       message: "custom-color".tr(),
-      child: LockedFeature(
-        actionAfter: () async {
-          await openBottomSheet(context, colorPickerPopup);
-        },
+      child: Tappable(
+        onTap: () => openBottomSheet(context, colorPickerPopup),
+        borderRadius: 20,
+        color: Colors.transparent,
         child: Container(
           margin: widget.margin ??
               EdgeInsetsDirectional.only(start: 8, end: 8, top: 8, bottom: 8),
