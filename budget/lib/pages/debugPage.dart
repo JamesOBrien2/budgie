@@ -10,7 +10,6 @@ import 'package:budget/struct/settings.dart';
 import 'package:budget/widgets/button.dart';
 import 'package:budget/widgets/dropdownSelect.dart';
 import 'package:budget/widgets/globalSnackbar.dart';
-import 'package:budget/widgets/navigationFramework.dart';
 import 'package:budget/widgets/openPopup.dart';
 import 'package:budget/widgets/openSnackbar.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
@@ -567,13 +566,6 @@ class DebugPage extends StatelessWidget {
                 },
               ),
               SizedBox(height: 20),
-              Button(
-                  label: "Force full sync",
-                  onTap: () async {
-                    sharedPreferences.setString(
-                        "dateOfLastSyncedWithClient", "{}");
-                    runAllCloudFunctions(context);
-                  }),
               SizedBox(height: 20),
               Button(
                 expandedLayout: true,

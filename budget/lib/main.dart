@@ -1,4 +1,3 @@
-import 'package:budget/pages/accountsPage.dart';
 import 'package:budget/struct/currencyFunctions.dart';
 import 'package:budget/struct/iconObjects.dart';
 import 'package:budget/struct/keyboardIntents.dart';
@@ -109,7 +108,6 @@ class App extends StatelessWidget {
                 )),
               ],
             ),
-            EnableSignInWithGoogleFlyIn(),
             GlobalLoadingIndeterminate(key: loadingIndeterminateKey),
             GlobalLoadingProgress(key: loadingProgressKey),
           ],

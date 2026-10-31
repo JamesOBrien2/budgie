@@ -7,7 +7,6 @@ import 'package:budget/pages/budgetsListPage.dart';
 import 'package:budget/pages/creditDebtTransactionsPage.dart';
 import 'package:budget/pages/editHomePage.dart';
 import 'package:budget/pages/editObjectivesPage.dart';
-import 'package:budget/pages/homePage/homePageNetWorth.dart';
 import 'package:budget/pages/objectivesListPage.dart';
 import 'package:budget/pages/transactionsListPage.dart';
 import 'package:budget/pages/upcomingOverdueTransactionsPage.dart';
@@ -20,26 +19,22 @@ import 'package:budget/widgets/dropdownSelect.dart';
 import 'package:budget/widgets/exportDB.dart';
 import 'package:budget/widgets/importCSV.dart';
 import 'package:budget/widgets/exportCSV.dart';
-import 'package:budget/pages/autoTransactionsPageEmail.dart';
 import 'package:budget/pages/activityPage.dart';
 import 'package:budget/pages/editAssociatedTitlesPage.dart';
 import 'package:budget/pages/editBudgetPage.dart';
 import 'package:budget/pages/editCategoriesPage.dart';
 import 'package:budget/pages/editWalletsPage.dart';
 import 'package:budget/pages/subscriptionsPage.dart';
-import 'package:budget/widgets/accountAndBackup.dart';
 import 'package:budget/widgets/importDB.dart';
 import 'package:budget/widgets/navigationFramework.dart';
 import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
-import 'package:budget/widgets/openPopup.dart';
 import 'package:budget/widgets/radioItems.dart';
 import 'package:budget/widgets/restartApp.dart';
 import 'package:budget/widgets/selectAmount.dart';
 import 'package:budget/widgets/selectColor.dart';
 import 'package:budget/widgets/settingsContainers.dart';
 import 'package:budget/pages/walletDetailsPage.dart';
-import 'package:budget/widgets/sliderSelector.dart';
 import 'package:budget/widgets/tappable.dart';
 import 'package:budget/widgets/textWidgets.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -203,11 +198,6 @@ class MorePages extends StatelessWidget {
                       ),
                     )
                   : SizedBox.shrink(),
-              if (hasSideNavigation == false)
-                Expanded(
-                    child: GoogleAccountLoginButton(
-                  key: settingsGoogleAccountLoginButtonKey,
-                )),
             ],
           ),
           if (hasSideNavigation == false)
@@ -518,16 +508,6 @@ class SettingsPageContent extends StatelessWidget {
         //   icon: appStateSettings["outlinedIcons"] ? Icons.auto_fix_high_outlined : Icons.auto_fix_high_rounded,
         // ),
 
-        appStateSettings["emailScanning"]
-            ? SettingsContainerOpenPage(
-                openPage: AutoTransactionsPageEmail(),
-                title: "auto-email-transactions".tr(),
-                icon: appStateSettings["outlinedIcons"]
-                    ? Icons.mark_email_unread_outlined
-                    : Icons.mark_email_unread_rounded,
-              )
-            : SizedBox.shrink(),
-
         SettingsContainerOpenPage(
           openPage: BillSplitter(),
           title: "bill-splitter".tr(),
@@ -555,11 +535,6 @@ class SettingsPageContent extends StatelessWidget {
         ExportDB(),
 
         ImportDB(),
-
-        GoogleAccountLoginButton(
-          isOutlinedButton: false,
-          forceButtonName: "google-drive".tr(),
-        ),
       ],
     );
   }

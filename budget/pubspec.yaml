@@ -37,8 +37,6 @@ dependencies:
   path: ^1.9.0
   math_expressions: ^2.5.0
   share_plus: ^10.0.0
-  google_sign_in: ^6.2.1
-  googleapis: ^13.1.0
   universal_html: ^2.2.4
   flutter_charset_detector: ^1.0.2
   file_picker:
@@ -52,7 +50,6 @@ dependencies:
     path: ./packages/sliding_sheet-0.5.2-modified/
   implicitly_animated_reorderable_list:
     path: ./packages/implicitly_animated_reorderable_list-0.4.2-modified/
-  shimmer: ^3.0.0
   carousel_slider: ^5.0.0
   # flutter_notification_listener: ^1.3.2
   # installed_apps: ^1.3.1
@@ -78,7 +75,6 @@ dependencies:
   gradient_borders: ^1.0.1
   visibility_detector: ^0.4.0+2
   confetti: ^0.7.0
-  image_picker: ^1.1.2
   material_symbols_icons: ^4.2768.0
   app_links: ^6.1.4
   expandable_page_view: ^1.0.17

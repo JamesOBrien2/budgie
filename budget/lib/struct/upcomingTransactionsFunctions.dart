@@ -593,8 +593,7 @@ Future openUnpayDebtCreditPopup(
         paid: true,
       );
       popRoute(context, true);
-      await database.createOrUpdateTransaction(transactionNew,
-          updateSharedEntry: false);
+      await database.createOrUpdateTransaction(transactionNew);
     },
   );
 }

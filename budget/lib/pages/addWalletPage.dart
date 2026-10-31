@@ -966,7 +966,6 @@ Future<TransactionCategory> initializeBalanceCorrectionCategory() async {
 
     await database.createOrUpdateCategory(
       insert: false,
-      updateSharedEntry: false,
       TransactionCategory(
         categoryPk: "0",
         name: "default-category-account-amount-balancing".tr(),
@@ -995,7 +994,6 @@ Future<String?> createCorrectionTransaction(
 
   int? rowId = await database.createOrUpdateTransaction(
     insert: true,
-    updateSharedEntry: false,
     Transaction(
       pairedTransactionFk: pairedTransactionFk,
       transactionPk: "-1",

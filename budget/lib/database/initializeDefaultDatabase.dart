@@ -90,7 +90,6 @@ Future applySeed(Map<String, dynamic> seed) async {
     Map budget = budgets[i];
     DateTime start = DateTime.parse(budget["start"]);
     await database.createOrUpdateBudget(
-      updateSharedEntry: false,
       Budget(
         budgetPk: "seed-budget-" + i.toString(),
         name: budget["name"],
