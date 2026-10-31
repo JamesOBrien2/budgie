@@ -9,7 +9,6 @@ import 'package:budget/widgets/textWidgets.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:local_auth/local_auth.dart';
 
 enum AuthResult {
   waiting,
@@ -21,44 +20,13 @@ enum AuthResult {
 
 bool authAvailable = false;
 
+// Budgie is web-only, where there is no device lock to check.
 Future<AuthResult> checkBiometrics({
   bool checkAlways = false,
 }) async {
-  try {
-    if (kIsWeb) {
-      authAvailable = false;
-      await updateSettings("requireAuth", false, updateGlobalState: false);
-      return AuthResult.authenticated;
-    }
-
-    final LocalAuthentication auth = LocalAuthentication();
-    authAvailable =
-        await auth.isDeviceSupported() || await auth.canCheckBiometrics;
-
-    final bool requireAuth =
-        checkAlways || appStateSettings["requireAuth"] == true;
-    if (requireAuth == false) return AuthResult.authenticated;
-
-    await auth.stopAuthentication();
-
-    if (authAvailable) {
-      //bool biometricsOnly = (await auth.canCheckBiometrics);
-      return (await auth.authenticate(
-        localizedReason: "verify-identity".tr(),
-        options: AuthenticationOptions(biometricOnly: false),
-      ))
-          ? AuthResult.authenticated
-          : AuthResult.unauthenticated;
-    }
-
-    return isDatabaseImportedOnThisSession
-        ? AuthResult.errorBackupRestoreLaunch
-        : AuthResult.error;
-  } catch (e) {
-    return isDatabaseImportedOnThisSession
-        ? AuthResult.errorBackupRestoreLaunch
-        : AuthResult.error;
-  }
+  authAvailable = false;
+  await updateSettings("requireAuth", false, updateGlobalState: false);
+  return AuthResult.authenticated;
 }
 
 class InitializeBiometrics extends StatefulWidget {

@@ -32,7 +32,6 @@ import 'package:budget/struct/currencyFunctions.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/defaultPreferences.dart';
 import 'package:budget/struct/navBarIconsData.dart';
-import 'package:budget/struct/quickActions.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/struct/shareBudget.dart';
 import 'package:budget/struct/syncClient.dart';
@@ -426,7 +425,6 @@ class PageNavigationFrameworkState extends State<PageNavigationFramework> {
       await setDailyNotifications(context);
       await initializeDefaultDatabase();
       runNotificationPayLoads(context);
-      runQuickActionsPayLoads(context);
       initializeLocalizedMonthNames();
       initializeStoreAndPurchases(
           context: context, popRouteWithPurchase: false);

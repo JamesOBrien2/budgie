@@ -15,7 +15,6 @@ import 'package:budget/widgets/timeDigits.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import './colors.dart';
@@ -1378,17 +1377,6 @@ Future<int?> getAndroidVersion() async {
     }
   }
   return androidVersion;
-}
-
-Future<bool> setHighRefreshRate() async {
-  try {
-    if (getPlatform() == PlatformOS.isAndroid)
-      await FlutterDisplayMode.setHighRefreshRate();
-    return true;
-  } catch (e) {
-    print("Error setting high refresh rate: " + e.toString());
-  }
-  return false;
 }
 
 double absoluteZero(double number) {

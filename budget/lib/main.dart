@@ -53,7 +53,6 @@ void main() async {
     tz.setLocalLocation(tz.getLocation(locationName ?? "America/New_York"));
     iconObjects.sort((a, b) => (a.mostLikelyCategoryName ?? a.icon)
         .compareTo((b.mostLikelyCategoryName ?? b.icon)));
-    setHighRefreshRate();
     runApp(
       InitializeLocalizations(
         child: RestartApp(
@@ -137,9 +136,7 @@ class App extends StatelessWidget {
 
         Widget mainWidget = OnAppResume(
           updateGlobalAppLifecycleState: true,
-          onAppResume: () async {
-            await setHighRefreshRate();
-          },
+          onAppResume: () {},
           child: InitializeBiometrics(
             child: InitializeNotificationService(
               child: InitializeAppLinks(
