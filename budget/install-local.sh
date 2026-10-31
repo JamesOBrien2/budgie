@@ -14,6 +14,7 @@ flutter build web --release --no-web-resources-cdn --pwa-strategy=none
 
 mkdir -p "$SITE"
 rsync -a --delete build/web/ "$SITE/"
+cp serve-local.py "$HOME/.budgie/serve-local.py"
 
 cat > "$AGENT" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -23,9 +24,8 @@ cat > "$AGENT" <<EOF
   <key>Label</key><string>com.budgie.server</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/bin/python3</string><string>-m</string><string>http.server</string>
-    <string>$PORT</string><string>--bind</string><string>127.0.0.1</string>
-    <string>--directory</string><string>$SITE</string>
+    <string>/usr/bin/python3</string><string>$HOME/.budgie/serve-local.py</string>
+    <string>$PORT</string><string>$SITE</string>
   </array>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
@@ -35,4 +35,5 @@ EOF
 launchctl bootout "gui/$(id -u)/com.budgie.server" 2>/dev/null || true
 launchctl bootstrap "gui/$(id -u)" "$AGENT"
 
+for _ in 1 2 3 4 5; do curl -fs -o /dev/null "http://127.0.0.1:$PORT/" && break; sleep 1; done
 echo "Budgie is running at http://127.0.0.1:$PORT"
