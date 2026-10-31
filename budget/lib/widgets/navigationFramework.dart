@@ -297,7 +297,6 @@ GlobalKey<GlobalLoadingProgressState> loadingProgressKey = GlobalKey();
 GlobalKey<GlobalLoadingIndeterminateState> loadingIndeterminateKey =
     GlobalKey();
 GlobalKey<GlobalSnackbarState> snackbarKey = GlobalKey();
-GlobalKey<RenderHomePageWidgetsState> renderHomePageWidgetsKey = GlobalKey();
 
 late bool entireAppLoaded;
 bool runningCloudFunctions = false;
