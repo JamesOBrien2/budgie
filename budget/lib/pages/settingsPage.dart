@@ -57,7 +57,6 @@ import 'package:provider/provider.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/widgets/framework/popupFramework.dart';
-import 'package:app_settings/app_settings.dart';
 import 'package:budget/widgets/outlinedButtonStacked.dart';
 
 //To get SHA1 Key run
@@ -579,17 +578,6 @@ class SettingsPageContent extends StatelessWidget {
               )
             : SizedBox.shrink(),
 
-        appStateSettings["notificationScanningDebug"] &&
-                getPlatform(ignoreEmulation: true) == PlatformOS.isAndroid
-            ? SettingsContainerOpenPage(
-                title: "Notification Transactions",
-                openPage: AutoTransactionsPageNotifications(),
-                icon: appStateSettings["outlinedIcons"]
-                    ? Icons.edit_notifications_outlined
-                    : Icons.edit_notifications_rounded,
-              )
-            : SizedBox.shrink(),
-
         SettingsContainerOpenPage(
           openPage: BillSplitter(),
           title: "bill-splitter".tr(),
@@ -865,12 +853,6 @@ class _BiometricsSettingToggleState extends State<BiometricsSettingToggle> {
                           isLocked = false;
                         });
                         popRoute(context);
-                        // On iOS the notification app settings page also has
-                        // the permission for biometrics
-                        if (getPlatform() == PlatformOS.isIOS) {
-                          AppSettings.openAppSettings(
-                              type: AppSettingsType.notification);
-                        }
                       },
                     );
                   } else if (authResult == AuthResult.authenticated) {

@@ -6,7 +6,6 @@ import 'package:budget/widgets/statusBox.dart';
 import 'package:budget/widgets/util/onAppResume.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:app_settings/app_settings.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({Key? key}) : super(key: key);
@@ -54,9 +53,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   ? Icons.warning_outlined
                   : Icons.warning_rounded,
               color: Theme.of(context).colorScheme.error,
-              onTap: () {
-                AppSettings.openAppSettings(type: AppSettingsType.notification);
-              },
             ),
           ),
           AnimatedOpacity(

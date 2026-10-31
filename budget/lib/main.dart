@@ -1,5 +1,4 @@
 import 'package:budget/pages/accountsPage.dart';
-import 'package:budget/pages/autoTransactionsPageEmail.dart';
 import 'package:budget/struct/currencyFunctions.dart';
 import 'package:budget/struct/iconObjects.dart';
 import 'package:budget/struct/keyboardIntents.dart';
@@ -137,13 +136,11 @@ class App extends StatelessWidget {
           updateGlobalAppLifecycleState: true,
           onAppResume: () {},
           child: InitializeBiometrics(
-            child: InitializeNotificationService(
-              child: InitializeAppLinks(
-                child: WatchForDayChange(
-                  child: WatchSelectedWalletPk(
-                    child: WatchAllWallets(
-                      child: child ?? SizedBox.shrink(),
-                    ),
+            child: InitializeAppLinks(
+              child: WatchForDayChange(
+                child: WatchSelectedWalletPk(
+                  child: WatchAllWallets(
+                    child: child ?? SizedBox.shrink(),
                   ),
                 ),
               ),

@@ -78,7 +78,6 @@ dependencies:
   timer_builder: ^2.0.0
   device_info_plus: ^10.1.0
   flutter_lazy_indexed_stack: ^0.0.6 
-  app_settings: ^5.1.1
   provider: ^6.1.2
   flutter_timezone: ^1.0.8
   scrollable_positioned_list: ^0.3.8
@@ -89,7 +88,6 @@ dependencies:
   visibility_detector: ^0.4.0+2
   confetti: ^0.7.0
   image_picker: ^1.1.2
-  notification_listener_service: ^0.3.3
   material_symbols_icons: ^4.2768.0
   app_links: ^6.1.4
   expandable_page_view: ^1.0.17
