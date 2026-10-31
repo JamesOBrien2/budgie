@@ -18,7 +18,6 @@ import 'package:budget/pages/editBudgetPage.dart';
 import 'package:budget/pages/editObjectivesPage.dart';
 import 'package:budget/pages/editWalletsPage.dart';
 import 'package:budget/pages/homePage/homePage.dart';
-import 'package:budget/pages/notificationsPage.dart';
 import 'package:budget/pages/objectivesListPage.dart';
 import 'package:budget/pages/onBoardingPage.dart';
 import 'package:budget/pages/settingsPage.dart';
@@ -44,7 +43,6 @@ import 'package:budget/widgets/iconButtonScaled.dart';
 import 'package:budget/widgets/importDB.dart';
 import 'package:budget/widgets/moreIcons.dart';
 import 'package:budget/widgets/navigationSidebar.dart';
-import 'package:budget/widgets/notificationsSettings.dart';
 import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:budget/widgets/openContainerNavigation.dart';
 import 'package:budget/widgets/openPopup.dart';
@@ -54,7 +52,6 @@ import 'package:budget/widgets/selectAmount.dart';
 import 'package:budget/widgets/selectChips.dart';
 import 'package:budget/widgets/selectedTransactionsAppBar.dart';
 import 'package:budget/widgets/showChangelog.dart';
-import 'package:budget/struct/initializeNotifications.dart';
 import 'package:budget/widgets/globalLoadingProgress.dart';
 import 'package:budget/widgets/globalSnackbar.dart';
 import 'package:budget/pages/editCategoriesPage.dart';
@@ -356,7 +353,8 @@ class PageNavigationFrameworkState extends State<PageNavigationFramework> {
   final List<Widget> pagesExtended = [
     MoreActionsPage(), //4
     SubscriptionsPage(key: subscriptionsPageStateKey), //5
-    NotificationsPage(), //6
+    // 6 was the notifications page; kept empty so the indexes below hold
+    SizedBox.shrink(), //6
     WalletDetailsPage(
         key: walletDetailsAllSpendingPageStateKey, wallet: null), //7
     AccountsPage(key: accountsPageStateKey), // 8
@@ -410,13 +408,9 @@ class PageNavigationFrameworkState extends State<PageNavigationFramework> {
       bool isDatabaseCorruptedPopupShown = openDatabaseCorruptedPopup(context);
       if (isDatabaseCorruptedPopupShown) return;
 
-      await initializeNotificationsPlatform();
-
       bool isChangelogShown = showChangelog(context);
 
-      await setDailyNotifications(context);
       await initializeDefaultDatabase();
-      runNotificationPayLoads(context);
       initializeLocalizedMonthNames();
 
       if (entireAppLoaded == false) {
@@ -432,10 +426,6 @@ class PageNavigationFrameworkState extends State<PageNavigationFramework> {
       // Maybe another device already marked them as paid
       await markSubscriptionsAsPaid(context);
       await markUpcomingAsPaid();
-
-      // Should do this after syncing and after the subscriptions/upcoming transactions auto paid for
-      // The upcoming transactions may have been modified after a sync
-      await setUpcomingNotifications(context);
 
       await database.deleteWanderingTransactions();
       await database.deleteWanderingTitles();

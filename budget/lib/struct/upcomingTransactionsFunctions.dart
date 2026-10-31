@@ -4,7 +4,6 @@ import 'package:budget/pages/addTransactionPage.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/widgets/globalSnackbar.dart';
-import 'package:budget/struct/initializeNotifications.dart';
 import 'package:budget/widgets/navigationFramework.dart';
 import 'package:budget/widgets/openPopup.dart';
 import 'package:budget/widgets/openSnackbar.dart';
@@ -319,7 +318,6 @@ Future markAsPaid({
     transaction,
     closelyRelatedPairedTransactionFk: closelyRelatedPairedTransactionFk,
   );
-  await setUpcomingNotifications(navigatorKey.currentContext!);
 }
 
 Future markAsSkipped({
@@ -351,7 +349,6 @@ Future markAsSkipped({
     transaction,
     closelyRelatedPairedTransactionFk: closelyRelatedPairedTransactionFk,
   );
-  await setUpcomingNotifications(navigatorKey.currentContext!);
 }
 
 Future openPayDebtCreditPopup(
@@ -533,7 +530,6 @@ Future openRemoveSkipPopup(
       Transaction transactionNew = transaction.copyWith(skipPaid: false);
       popRoute(context, true);
       await database.createOrUpdateTransaction(transactionNew);
-      await setUpcomingNotifications(navigatorKey.currentContext!);
     },
   );
 }
@@ -568,7 +564,6 @@ Future openUnpayPopup(
         );
         popRoute(context, true);
         await database.createOrUpdateTransaction(transactionNew);
-        await setUpcomingNotifications(navigatorKey.currentContext!);
       });
 }
 

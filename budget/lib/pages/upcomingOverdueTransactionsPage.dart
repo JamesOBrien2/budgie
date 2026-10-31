@@ -4,7 +4,6 @@ import 'package:budget/functions.dart';
 import 'package:budget/pages/addTransactionPage.dart';
 import 'package:budget/pages/subscriptionsPage.dart';
 import 'package:budget/struct/databaseGlobal.dart';
-import 'package:budget/struct/initializeNotifications.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/struct/upcomingTransactionsFunctions.dart';
 import 'package:budget/widgets/animatedExpanded.dart';
@@ -462,7 +461,6 @@ class AutoPayUpcomingSetting extends StatelessWidget {
         await updateSettings("automaticallyPayUpcoming", value,
             updateGlobalState: false);
         await markUpcomingAsPaid();
-        await setUpcomingNotifications(context);
       },
       initialValue: appStateSettings["automaticallyPayUpcoming"],
       icon: getTransactionTypeIcon(TransactionSpecialType.upcoming),
@@ -484,7 +482,6 @@ class AutoPayRepetitiveSetting extends StatelessWidget {
             updateGlobalState: false);
         // Repetitive and subscriptions are handled by the same function
         await markSubscriptionsAsPaid(context);
-        await setUpcomingNotifications(context);
       },
       initialValue: appStateSettings["automaticallyPayRepetitive"],
       icon: getTransactionTypeIcon(TransactionSpecialType.repetitive),

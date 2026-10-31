@@ -4,7 +4,6 @@ import 'package:budget/pages/addBudgetPage.dart';
 import 'package:budget/pages/addTransactionPage.dart';
 import 'package:budget/pages/upcomingOverdueTransactionsPage.dart';
 import 'package:budget/struct/databaseGlobal.dart';
-import 'package:budget/struct/initializeNotifications.dart';
 import 'package:budget/struct/upcomingTransactionsFunctions.dart';
 import 'package:budget/widgets/animatedExpanded.dart';
 import 'package:budget/widgets/dropdownSelect.dart';
@@ -343,7 +342,6 @@ class AutoPaySubscriptionsSetting extends StatelessWidget {
         await updateSettings("automaticallyPaySubscriptions", value,
             updateGlobalState: false);
         await markSubscriptionsAsPaid(context);
-        await setUpcomingNotifications(context);
       },
       initialValue: appStateSettings["automaticallyPaySubscriptions"],
       icon: getTransactionTypeIcon(TransactionSpecialType.subscription),

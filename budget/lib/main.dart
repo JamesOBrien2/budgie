@@ -12,12 +12,10 @@ import 'package:budget/widgets/watchAllWallets.dart';
 import 'package:budget/database/tables.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/settings.dart';
-import 'package:budget/struct/notificationsGlobal.dart';
 import 'package:budget/widgets/navigationSidebar.dart';
 import 'package:budget/widgets/globalLoadingProgress.dart';
 import 'package:budget/struct/scrollBehaviorOverride.dart';
 import 'package:budget/widgets/globalSnackbar.dart';
-import 'package:budget/struct/initializeNotifications.dart';
 import 'package:budget/widgets/navigationFramework.dart';
 import 'package:budget/widgets/restartApp.dart';
 import 'package:budget/struct/customDelayedCurve.dart';
@@ -37,7 +35,6 @@ void main() async {
     await EasyLocalization.ensureInitialized();
     sharedPreferences = await SharedPreferences.getInstance();
     database = await constructDb('db');
-    notificationPayload = await initializeNotifications();
     entireAppLoaded = false;
     await loadCurrencyJSON();
     await loadLanguageNamesJSON();
@@ -127,7 +124,6 @@ class App extends StatelessWidget {
 
         Widget mainWidget = OnAppResume(
           updateGlobalAppLifecycleState: true,
-          onAppResume: () {},
           child: InitializeAppLinks(
             child: WatchForDayChange(
               child: WatchSelectedWalletPk(

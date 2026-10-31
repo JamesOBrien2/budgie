@@ -30,7 +30,6 @@ import 'package:budget/widgets/selectedTransactionsAppBar.dart';
 import 'package:budget/widgets/settingsContainers.dart';
 import 'package:budget/widgets/sliverStickyLabelDivider.dart';
 import 'package:budget/widgets/timeDigits.dart';
-import 'package:budget/struct/initializeNotifications.dart';
 import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:budget/widgets/openPopup.dart';
 import 'package:budget/widgets/openSnackbar.dart';
@@ -579,14 +578,6 @@ class _AddTransactionPageState extends State<AddTransactionPage>
             flashTransaction(transactionJustAdded.transactionPk);
           }
         }
-      }
-
-      if ([
-        TransactionSpecialType.repetitive,
-        TransactionSpecialType.subscription,
-        TransactionSpecialType.upcoming
-      ].contains(createdTransaction.type)) {
-        setUpcomingNotifications(context);
       }
 
       // recentlyAddedTransactionID.value =

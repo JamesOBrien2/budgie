@@ -6,14 +6,14 @@ class OnAppResume extends StatefulWidget {
   const OnAppResume({
     super.key,
     required this.child,
-    required this.onAppResume,
+    this.onAppResume,
     this.onAppPaused,
     this.onAppInactive,
     this.updateGlobalAppLifecycleState = false,
   });
 
   final Widget child;
-  final VoidCallback onAppResume;
+  final VoidCallback? onAppResume;
   final VoidCallback? onAppPaused;
   final VoidCallback? onAppInactive;
   final bool updateGlobalAppLifecycleState;
@@ -48,7 +48,7 @@ class _OnAppResumeState extends State<OnAppResume> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed &&
         (_lastState == AppLifecycleState.paused ||
             _lastState == AppLifecycleState.inactive)) {
-      widget.onAppResume();
+      widget.onAppResume?.call();
     }
 
     if (widget.onAppInactive != null && state == AppLifecycleState.inactive) {

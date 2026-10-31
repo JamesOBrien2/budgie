@@ -11,7 +11,6 @@ import 'package:budget/widgets/button.dart';
 import 'package:budget/widgets/dropdownSelect.dart';
 import 'package:budget/widgets/globalSnackbar.dart';
 import 'package:budget/widgets/navigationFramework.dart';
-import 'package:budget/widgets/notificationsSettings.dart';
 import 'package:budget/widgets/openPopup.dart';
 import 'package:budget/widgets/openSnackbar.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
@@ -644,14 +643,6 @@ class DebugPage extends StatelessWidget {
                         ],
                       ),
                     );
-                  }),
-              SizedBox(height: 20),
-              Button(
-                  label: "Send Notification",
-                  onTap: () async {
-                    initializeNotificationsPlatform();
-                    scheduleDailyNotification(context, TimeOfDay.now(),
-                        scheduleNowDebug: true);
                   }),
               SizedBox(height: 20),
               Button(

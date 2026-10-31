@@ -76,13 +76,6 @@ Map<String, NavBarIconData> getNavBarIconsData() {
       label: "loans",
       navigationIndexedStackIndex: 17,
     ),
-    "notifications": NavBarIconData(
-      iconData: appStateSettings["outlinedIcons"]
-          ? Icons.notifications_outlined
-          : Icons.notifications_rounded,
-      label: "notifications",
-      navigationIndexedStackIndex: 6,
-    ),
     "allSpending": NavBarIconData(
       iconData: appStateSettings["outlinedIcons"]
           ? Icons.receipt_long_outlined

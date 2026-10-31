@@ -27,12 +27,10 @@ import 'package:budget/pages/editAssociatedTitlesPage.dart';
 import 'package:budget/pages/editBudgetPage.dart';
 import 'package:budget/pages/editCategoriesPage.dart';
 import 'package:budget/pages/editWalletsPage.dart';
-import 'package:budget/pages/notificationsPage.dart';
 import 'package:budget/pages/subscriptionsPage.dart';
 import 'package:budget/widgets/accountAndBackup.dart';
 import 'package:budget/widgets/importDB.dart';
 import 'package:budget/widgets/navigationFramework.dart';
-import 'package:budget/widgets/notificationsSettings.dart';
 import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
 import 'package:budget/widgets/openPopup.dart';
@@ -211,16 +209,7 @@ class MorePages extends StatelessWidget {
                         isOutlined: true,
                       ),
                     )
-                  : notificationsGlobalEnabled
-                      ? Expanded(
-                          child: SettingsContainerOpenPage(
-                            openPage: NotificationsPage(),
-                            title: navBarIconsData["notifications"]!.label.tr(),
-                            icon: navBarIconsData["notifications"]!.iconData,
-                            isOutlined: true,
-                          ),
-                        )
-                      : SizedBox.shrink(),
+                  : SizedBox.shrink(),
               if (hasSideNavigation == false)
                 Expanded(
                     child: GoogleAccountLoginButton(
@@ -496,16 +485,6 @@ class SettingsPageContent extends StatelessWidget {
               ? Icons.home_outlined
               : Icons.home_rounded,
         ),
-
-        notificationsGlobalEnabled && getIsFullScreen(context) == false
-            ? SettingsContainerOpenPage(
-                openPage: NotificationsPage(),
-                title: "notifications".tr(),
-                icon: appStateSettings["outlinedIcons"]
-                    ? Icons.notifications_outlined
-                    : Icons.notifications_rounded,
-              )
-            : SizedBox.shrink(),
 
         SettingsContainer(
           title: "language".tr(),
