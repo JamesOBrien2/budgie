@@ -11,25 +11,18 @@ import 'package:budget/widgets/breathingAnimation.dart';
 import 'package:budget/widgets/button.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
 import 'package:budget/widgets/moreIcons.dart';
-import 'package:budget/widgets/navigationFramework.dart';
-import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:budget/widgets/openPopup.dart';
-import 'package:budget/widgets/statusBox.dart';
 import 'package:budget/widgets/tappable.dart';
 import 'package:budget/widgets/textWidgets.dart';
-import 'package:budget/widgets/transactionEntry/transactionEntry.dart';
 import 'package:budget/widgets/viewAllTransactionsButton.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sa3_liquid/sa3_liquid.dart';
 import 'package:budget/widgets/openContainerNavigation.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
 
 bool premiumPopupEnabled = kIsWeb == false;
 bool tryStoreEnabled = kIsWeb == false && kDebugMode == false;
-StreamSubscription<List<PurchaseDetails>>? purchaseListener;
-Map<String, ProductDetails> storeProducts = {};
 Map<String, String> productIDs = {
   'yearly': getPlatform(ignoreEmulation: true) == PlatformOS.isIOS
       ? 'cashew.pro.yearly' //iOS
@@ -158,10 +151,6 @@ class PremiumPage extends StatelessWidget {
                                   height: 13 +
                                       MediaQuery.sizeOf(context).height *
                                           0.028),
-                              Products(
-                                key: purchasesStateKey,
-                                popRouteWithPurchase: popRouteWithPurchase,
-                              ),
                               SizedBox(height: 10),
                             ],
                           ),
@@ -173,16 +162,11 @@ class PremiumPage extends StatelessWidget {
                                     const EdgeInsetsDirectional.only(top: 4),
                                 child: Tappable(
                                   onTap: () async {
-                                    var result = await openPopupCustom(
+                                    await openPopupCustom(
                                       context,
                                       barrierDismissible: false,
                                       child: FreePremiumMessage(),
                                     );
-                                    // Highlight support options
-                                    if (result is bool && result == false) {
-                                      purchasesStateKey.currentState
-                                          ?.highlightProducts();
-                                    }
                                   },
                                   color: darkenPastel(
                                           Theme.of(context).colorScheme.primary,
@@ -573,147 +557,6 @@ class ManageSubscription extends StatelessWidget {
   }
 }
 
-void listenToPurchaseUpdated({
-  required List<PurchaseDetails> purchaseDetailsList,
-  required BuildContext context,
-  required bool popRouteWithPurchase,
-}) {
-  // ignore: avoid_function_literals_in_foreach_calls
-  purchaseDetailsList.forEach((PurchaseDetails purchaseDetails) async {
-    if (productIDs.values.toSet().contains(purchaseDetails.productID)) {
-      if (purchaseDetails.status == PurchaseStatus.purchased ||
-          purchaseDetails.status == PurchaseStatus.restored) {
-        updateSettings("purchaseID", purchaseDetails.productID,
-            updateGlobalState: false, pagesNeedingRefresh: [3]);
-        print("Purchased " + purchaseDetails.productID);
-        if (popRouteWithPurchase == true) {
-          popRoute(null, true);
-        }
-      }
-
-      if (purchaseDetails.status == PurchaseStatus.pending) {
-        print("Loading purchase");
-      } else {
-        if (purchaseDetails.status == PurchaseStatus.error ||
-            purchaseDetails.status == PurchaseStatus.canceled) {
-          if (navigatorKey.currentContext != null) {
-            SnackBar snackBar = SnackBar(
-              content: Text('error-processing-order'.tr()),
-            );
-            ScaffoldMessenger.of(navigatorKey.currentContext!)
-                .showSnackBar(snackBar);
-          }
-        } else if (purchaseDetails.status == PurchaseStatus.purchased) {
-          if (navigatorKey.currentContext != null) {
-            SnackBar snackBar = SnackBar(
-              content: Text('order-confirmation'.tr()),
-            );
-            ScaffoldMessenger.of(navigatorKey.currentContext!)
-                .showSnackBar(snackBar);
-          }
-        }
-        if (purchaseDetails.pendingCompletePurchase) {
-          await InAppPurchase.instance.completePurchase(purchaseDetails);
-        }
-      }
-    }
-  });
-}
-
-Future<Map<String, ProductDetails>> initializeStoreAndPurchases(
-    {required BuildContext context, required bool popRouteWithPurchase}) async {
-  if (tryStoreEnabled == true) {
-    print("Loading Store");
-    final bool available = await InAppPurchase.instance.isAvailable();
-    if (available) {
-      //Reset any purchases if we can connect to the store, they will be restored if a purchase was made
-      updateSettings("purchaseID", null, updateGlobalState: false);
-
-      Stream<List<PurchaseDetails>> purchaseUpdated =
-          InAppPurchase.instance.purchaseStream;
-      purchaseListener?.cancel();
-      purchaseListener = purchaseUpdated.listen(
-        (purchaseDetailsList) {
-          listenToPurchaseUpdated(
-            purchaseDetailsList: purchaseDetailsList,
-            context: context,
-            popRouteWithPurchase: popRouteWithPurchase,
-          );
-        },
-        onDone: () {
-          purchaseListener?.cancel();
-          purchaseListener = null;
-        },
-        onError: (error) {
-          print(error);
-          purchaseListener = null;
-        },
-      );
-      final ProductDetailsResponse response = await InAppPurchase.instance
-          .queryProductDetails(productIDs.values.toSet());
-      if (response.notFoundIDs.isNotEmpty) {
-        print("Some products not found...");
-      } else {
-        storeProducts = {
-          for (var product in response.productDetails) product.id: product
-        };
-        print("Products Loaded");
-        print(storeProducts);
-      }
-      print("Restoring any purchases");
-      await InAppPurchase.instance.restorePurchases();
-      return storeProducts;
-    }
-  }
-
-  // Can't connect to store, don't show popup
-  premiumPopupEnabled = false;
-  return {};
-}
-
-Future restorePurchases(BuildContext context) async {
-  if (storeProducts.isEmpty) {
-    SnackBar snackBar = SnackBar(
-      content: Text('error-processing-order'.tr()),
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  } else {
-    await InAppPurchase.instance.restorePurchases();
-    SnackBar snackBar = SnackBar(
-      content: Text('any-previous-purchases-restored'.tr()),
-      action: getPlatform(ignoreEmulation: true) == PlatformOS.isAndroid
-          ? SnackBarAction(
-              label: "help".tr().capitalizeFirst,
-              onPressed: () {
-                showHelpRestorePopup(context);
-              })
-          : null,
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-}
-
-showHelpRestorePopup(BuildContext context) {
-  openPopup(
-    context,
-    icon: appStateSettings["outlinedIcons"]
-        ? Icons.shop_2_outlined
-        : Icons.shop_2_rounded,
-    title: "restore-purchases".tr(),
-    description: "restore-purchases-help".tr(),
-    onCancel: () => popRoute(context),
-    onCancelLabel: "close".tr(),
-    onSubmitLabel: "contact".tr(),
-    onSubmit: () async {
-      bool openResult = await openUrl('mailto:dapperappdeveloper@gmail.com');
-      if (openResult == false) copyToClipboard("dapperappdeveloper@gmail.com");
-    },
-    onExtra: () =>
-        openUrl("https://cashewapp.web.app/faq.html#restoring-purchases"),
-    onExtraLabel: "FAQ".tr(),
-  );
-}
-
 bool hidePremiumPopup() {
   return premiumPopupEnabled == false ||
       appStateSettings["purchaseID"] != null ||
@@ -812,227 +655,6 @@ Future premiumPopupAddTransaction(BuildContext context) async {
   return true;
 }
 
-class Products extends StatefulWidget {
-  const Products({this.popRouteWithPurchase = false, super.key});
-  final bool popRouteWithPurchase;
-
-  @override
-  State<Products> createState() => ProductsState();
-}
-
-class ProductsState extends State<Products> {
-  bool hasProducts = storeProducts.isNotEmpty;
-  bool loading = true;
-  bool animateHighlightProducts = false;
-
-  void refreshState() {
-    print("refresh products");
-    setState(() {});
-  }
-
-  void highlightProducts() {
-    print("highlight products");
-    setState(() {
-      animateHighlightProducts = true;
-    });
-  }
-
-  @override
-  void initState() {
-    Future.delayed(Duration.zero, () async {
-      Map<String, ProductDetails> products = await initializeStoreAndPurchases(
-        context: context,
-        popRouteWithPurchase: widget.popRouteWithPurchase,
-      );
-      setState(() {
-        hasProducts = products.isNotEmpty;
-        loading = false;
-      });
-    });
-    Future.delayed(Duration(milliseconds: 3500), () async {
-      if (loading)
-        setState(() {
-          loading = false;
-        });
-    });
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: Duration(milliseconds: 700),
-      child: appStateSettings["purchaseID"] != null
-          ? ManageSubscription()
-          : kIsWeb || hasProducts == false
-              ? loading == true
-                  ? SizedBox.shrink()
-                  : StatusBox(
-                      title: "error-getting-products".tr(),
-                      description: "error-getting-products-description".tr() +
-                          (kDebugMode && tryStoreEnabled == false
-                              ? " Store disabled in debug mode! Enable `tryStoreEnabled`"
-                              : ""),
-                      icon: appStateSettings["outlinedIcons"]
-                          ? Icons.warning_outlined
-                          : Icons.warning_rounded,
-                      color: Theme.of(context).colorScheme.error,
-                      onTap: () {
-                        initializeStoreAndPurchases(
-                          context: context,
-                          popRouteWithPurchase: widget.popRouteWithPurchase,
-                        );
-                      },
-                      forceDark: true,
-                    )
-              : Padding(
-                  padding: EdgeInsetsDirectional.symmetric(
-                      horizontal:
-                          getHorizontalPaddingConstrained(context) + 28),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 300),
-                    child: Column(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadiusDirectional.circular(20),
-                          child: FlashingContainer(
-                            isAnimating: animateHighlightProducts,
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            loopCount: 2,
-                            flashDuration: Duration(milliseconds: 650),
-                            child: Container(
-                              color: dynamicPastel(
-                                context,
-                                Theme.of(context).colorScheme.primaryContainer,
-                                amountDark: 0.2,
-                                amountLight: 0.6,
-                              ).withOpacity(0.45),
-                              child: Column(
-                                children: [
-                                  Builder(
-                                    builder: (context) {
-                                      if (storeProducts[productIDs["yearly"]] ==
-                                              null ||
-                                          storeProducts[
-                                                  productIDs["monthly"]] ==
-                                              null) {
-                                        return SizedBox.shrink();
-                                      }
-                                      final double monthlyPrice =
-                                          storeProducts[productIDs["monthly"]]!
-                                              .rawPrice;
-                                      final double monthlyPriceForYear =
-                                          (monthlyPrice * 12);
-                                      return storeProducts[
-                                                  productIDs["yearly"]] ==
-                                              null
-                                          ? SizedBox.shrink()
-                                          : SubscriptionOption(
-                                              label:
-                                                  "yearly".tr().capitalizeFirst,
-                                              price: storeProducts[
-                                                      productIDs["yearly"]]!
-                                                  .price,
-                                              extraPadding:
-                                                  EdgeInsetsDirectional.only(
-                                                      top: 13 / 2),
-                                              onTap: () {
-                                                InAppPurchase.instance
-                                                    .buyNonConsumable(
-                                                  purchaseParam: PurchaseParam(
-                                                    productDetails:
-                                                        storeProducts[
-                                                            productIDs[
-                                                                "yearly"]]!,
-                                                  ),
-                                                );
-                                              },
-                                              originalPrice: storeProducts[
-                                                          productIDs["yearly"]]!
-                                                      .currencySymbol +
-                                                  monthlyPriceForYear
-                                                      .toStringAsFixed(2),
-                                            );
-                                    },
-                                  ),
-                                  storeProducts[productIDs["monthly"]] == null
-                                      ? SizedBox.shrink()
-                                      : SubscriptionOption(
-                                          label: "monthly".tr().capitalizeFirst,
-                                          price: storeProducts[
-                                                  productIDs["monthly"]]!
-                                              .price,
-                                          onTap: () {
-                                            InAppPurchase.instance
-                                                .buyNonConsumable(
-                                              purchaseParam: PurchaseParam(
-                                                productDetails: storeProducts[
-                                                    productIDs["monthly"]]!,
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                  storeProducts[productIDs["lifetime"]] == null
-                                      ? SizedBox.shrink()
-                                      : SubscriptionOption(
-                                          label:
-                                              "lifetime".tr().capitalizeFirst,
-                                          price: storeProducts[
-                                                  productIDs["lifetime"]]!
-                                              .price,
-                                          extraPadding:
-                                              EdgeInsetsDirectional.only(
-                                                  bottom: 13 / 2),
-                                          onTap: () {
-                                            InAppPurchase.instance
-                                                .buyNonConsumable(
-                                              purchaseParam: PurchaseParam(
-                                                productDetails: storeProducts[
-                                                    productIDs["lifetime"]]!,
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsetsDirectional.symmetric(
-                              horizontal: 10, vertical: 4),
-                          child: Tappable(
-                            borderRadius: 15,
-                            color: dynamicPastel(
-                              context,
-                              Theme.of(context).colorScheme.primaryContainer,
-                              amountDark: 0.2,
-                              amountLight: 0.6,
-                            ).withOpacity(0.45),
-                            onTap: () async {
-                              restorePurchases(context);
-                            },
-                            child: Container(
-                              padding: EdgeInsetsDirectional.symmetric(
-                                  vertical: 6, horizontal: 13),
-                              child: TextFont(
-                                text: "restore-purchases".tr(),
-                                fontSize: 12,
-                                textColor:
-                                    getColor(context, "black").withOpacity(0.5),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-    );
-  }
-}
-
 class SubscriptionFeature extends StatelessWidget {
   const SubscriptionFeature({
     required this.iconData,
@@ -1088,99 +710,6 @@ class SubscriptionFeature extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class SubscriptionOption extends StatelessWidget {
-  const SubscriptionOption({
-    required this.label,
-    required this.price,
-    this.originalPrice,
-    required this.onTap,
-    this.extraPadding,
-    super.key,
-  });
-  final String label;
-  final String price;
-  final String? originalPrice;
-  final VoidCallback onTap;
-  final EdgeInsetsDirectional? extraPadding;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Tappable(
-            onTap: onTap,
-            color: Colors.transparent,
-            borderRadius: 0,
-            child: Padding(
-              padding: extraPadding ?? EdgeInsetsDirectional.zero,
-              child: Padding(
-                padding: const EdgeInsetsDirectional.symmetric(
-                    horizontal: 26, vertical: 13),
-                child: Wrap(
-                  alignment: WrapAlignment.spaceBetween,
-                  direction: Axis.horizontal,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    TextFont(
-                      text: label,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      textColor: getColor(context, "black"),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        TextFont(
-                          text: "",
-                          richTextSpan: [
-                            TextSpan(
-                              text: originalPrice,
-                              style: TextStyle(
-                                decoration: TextDecoration.lineThrough,
-                                decorationStyle: TextDecorationStyle.solid,
-                                decorationColor: getColor(context, "black")
-                                    .withOpacity(0.65),
-                                color:
-                                    getColor(context, "black").withOpacity(0.7),
-                                fontSize: 14,
-                                fontFamily: appStateSettings["font"],
-                                fontFamilyFallback: ['Inter'],
-                              ),
-                            ),
-                            TextSpan(
-                              text: originalPrice == null ? null : "  ",
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontFamily: appStateSettings["font"],
-                                fontFamilyFallback: ['Inter'],
-                              ),
-                            ),
-                            TextSpan(
-                              text: price,
-                              style: TextStyle(
-                                color: getColor(context, "black"),
-                                fontSize: 17,
-                                fontFamily: appStateSettings["font"],
-                                fontFamilyFallback: ['Inter'],
-                              ),
-                            ),
-                          ],
-                          fontSize: 17,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
