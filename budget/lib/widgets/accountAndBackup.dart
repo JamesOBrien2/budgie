@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:budget/colors.dart';
 import 'package:budget/database/generatePreviewData.dart';
 import 'package:budget/database/tables.dart';
-import 'package:budget/firebase_options.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/main.dart';
 import 'package:budget/pages/aboutPage.dart';
@@ -83,128 +82,6 @@ Future<bool> signInGoogle(
   // Budgie runs locally only: no Google sign-in, so Drive backup, sync and
   // shared budgets (all gated on being signed in) stay off.
   return false;
-  // bool isConnected = false;
-  if (await checkLockedFeatureIfInDemoMode(context) == false) return false;
-  if (appStateSettings["emailScanning"] == false) gMailPermissions = false;
-
-  try {
-    if (gMailPermissions == true &&
-        googleUser != null &&
-        !(await testIfHasGmailAccess())) {
-      await signOutGoogle();
-      googleSignIn = null;
-      settingsPageStateKey.currentState?.refreshState();
-    } else if (googleUser == null) {
-      googleSignIn = null;
-      settingsPageStateKey.currentState?.refreshState();
-    }
-    //Check connection
-    // isConnected = await checkConnection().timeout(Duration(milliseconds: 2500),
-    //     onTimeout: () {
-    //   throw ("There was an error checking your connection");
-    // });
-    // if (isConnected == false) {
-    //   if (context != null) {
-    //     openSnackbar(context, "Could not connect to network",
-    //         backgroundColor: lightenPastel(Theme.of(context).colorScheme.error,
-    //             amount: 0.6));
-    //   }
-    //   return false;
-    // }
-
-    if (waitForCompletion == true && context != null) openLoadingPopup(context);
-    if (googleUser == null) {
-      List<String> scopes = [
-        // See https://github.com/flutter/flutter/issues/155490 and https://github.com/flutter/flutter/issues/155429
-        // Once an account is logged in with these scopes, they are not needed
-        // So we will keep these to apply for all users to prevent errors, especially on silent sign in
-        "https://www.googleapis.com/auth/userinfo.profile",
-        "https://www.googleapis.com/auth/userinfo.email",
-        drive.DriveApi.driveAppdataScope,
-        ...(drivePermissionsAttachments == true
-            ? [drive.DriveApi.driveFileScope]
-            : []),
-        ...(gMailPermissions == true
-            ? [
-                gMail.GmailApi.gmailReadonlyScope,
-                gMail.GmailApi
-                    .gmailModifyScope //We do this so the emails can be marked read
-              ]
-            : [])
-      ];
-      googleSignIn = getPlatform() == PlatformOS.isIOS
-          ? signIn.GoogleSignIn(
-              clientId: DefaultFirebaseOptions.currentPlatform.iosClientId,
-              scopes: scopes)
-          : signIn.GoogleSignIn.standard(scopes: scopes);
-      // googleSignIn?.currentUser?.clearAuthCache();
-
-      final signIn.GoogleSignInAccount? account = silentSignIn == true
-          ?
-          // kIsWeb
-          //     ? await googleSignIn?.signInSilently()
-          // Google Sign-in silent on web no longer gives access to the scopes
-          // https://pub.dev/packages/google_sign_in_web#differences-between-google-identity-services-sdk-and-google-sign-in-for-web-sdk
-          // await googleSignIn?.signInSilently().then((value) async {
-          //     return await googleSignIn?.signIn();
-          //   })
-          // Currently we do not use silent sign in anymore, as it does not allow any access
-          // to GDrive or other tools, so there is no point to get the username/email form silent
-          kIsWeb
-              ? await googleSignIn?.signIn()
-              : await googleSignIn?.signInSilently()
-          : await googleSignIn?.signIn();
-
-      if (account != null) {
-        // print("ACCOUNT");
-        // print(account);
-        googleUser = account;
-        await updateSettings("currentUserEmail", googleUser?.email ?? "",
-            updateGlobalState: false);
-      } else {
-        throw ("Login failed");
-      }
-    }
-    if (waitForCompletion == true && context != null) popRoute(context);
-    if (next != null) next();
-
-    if (appStateSettings["hasSignedIn"] == false) {
-      await updateSettings("hasSignedIn", true, updateGlobalState: false);
-    }
-
-    refreshUIAfterLoginChange();
-    return true;
-  } catch (e) {
-    print(e);
-    if (waitForCompletion == true && context != null) popRoute(context);
-    openSnackbar(
-      SnackbarMessage(
-        title: "sign-in-error".tr(),
-        description: "sign-in-error-description".tr(),
-        icon: appStateSettings["outlinedIcons"]
-            ? Icons.error_outlined
-            : Icons.error_rounded,
-        timeout: Duration(milliseconds: 3400),
-        onTap: () => signInGoogle(
-          context: context,
-          drivePermissionsAttachments: drivePermissionsAttachments,
-          gMailPermissions: gMailPermissions,
-          next: next,
-          silentSignIn: false,
-          waitForCompletion: waitForCompletion,
-        ),
-      ),
-    );
-    googleUser = null;
-    await updateSettings("currentUserEmail", "", updateGlobalState: false);
-    if (runningCloudFunctions) {
-      errorSigningInDuringCloud = true;
-    } else {
-      await updateSettings("hasSignedIn", false, updateGlobalState: false);
-    }
-    refreshUIAfterLoginChange();
-    throw ("Error signing in");
-  }
 }
 
 void refreshUIAfterLoginChange() {
