@@ -1,3 +1,28 @@
+<h1 align="center"><b>Budgie</b></h1>
+
+**Budgie is a local-only fork of [Cashew](https://github.com/jameskokoska/Cashew)**, the open-source budgeting app by James Kokoska. It runs in your browser from your own Mac, keeps every transaction on your machine, and sets up your accounts, categories, budgets and goals from one file the first time it opens.
+
+### What's different from Cashew
+- **No cloud.** No Google sign-in, Firebase, Drive backup or cloud sync. The app and its data stay on your Mac.
+- **Starts already set up.** On a fresh install it reads `seed.json` next to the app and creates your accounts, categories, budgets and goals, then skips onboarding. Copy [`budget/seed.example.json`](budget/seed.example.json) to `budget/web/seed.json` and edit it. That file is gitignored, so your figures stay private.
+- **Runs at login.** [`budget/install-local.sh`](budget/install-local.sh) builds the web app, copies it to `~/.budgie/web` and serves it at <http://127.0.0.1:8484> with a LaunchAgent, so it is there whenever your Mac is on.
+- **Bank imports (planned):** a companion tool that sorts Revolut (Ireland) transactions into these categories.
+
+### Setup (macOS)
+1. Install Flutter **3.19.6** (`git clone -b 3.19.6 https://github.com/flutter/flutter.git`) and put its `bin` on your `PATH`. Newer Flutter versions don't build yet; see the open issue.
+2. `cp budget/seed.example.json budget/web/seed.json` and edit it.
+3. `budget/install-local.sh`
+4. Open <http://127.0.0.1:8484> in Safari, then **File → Add to Dock**. Always open Budgie the same way: your data lives in that browser's storage. Back it up now and then from **Settings → Export Cashew Data File**.
+
+Rerun `install-local.sh` after changing the code. To start over with a fresh seed, clear the site's data in the browser.
+
+Budgie is GPL-3.0, like Cashew. Not affiliated with or endorsed by Cashew.
+
+---
+
+<details>
+<summary><b>Original Cashew README</b></summary>
+
 <h1 align="center" style="font-size:28px; line-height:1"><b>Cashew</b></h1>
 
 
@@ -270,3 +295,5 @@ Note: required Firebase.
 ### Long Term Loans
 
 - Long term loans create a goal. However, the goals total is not used. Instead the total of the goal is calculated by totalling the proper polarity of transactions of the opposite type. For example, if it was a loan of 100$ lent out, the initial transaction would be 100$ of negative polarity (expense) and that would be the total of the goal. When a payment is made, it is made in the opposite (positive) polarity (income) and added to the total 'paid back'. We can easily find how much is remaining by taking the difference (or the addition including polarities).
+
+</details>

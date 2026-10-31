@@ -1,0 +1,103 @@
+{
+  "firstDayOfWeek": 1,
+  "wallets": [
+    {
+      "name": "Current account",
+      "currency": "eur"
+    }
+  ],
+  "categories": [
+    {
+      "name": "Groceries",
+      "icon": "groceries.png",
+      "colour": "#43a047"
+    },
+    {
+      "name": "Coffee",
+      "icon": "coffee-cup.png",
+      "colour": "#8d6e63"
+    },
+    {
+      "name": "Eating out",
+      "icon": "cutlery.png",
+      "colour": "#ef6c00"
+    },
+    {
+      "name": "Shopping",
+      "icon": "shopping.png",
+      "colour": "#ec407a"
+    },
+    {
+      "name": "Subscriptions",
+      "icon": "subscription.png",
+      "colour": "#5c6bc0"
+    },
+    {
+      "name": "Transport",
+      "icon": "tram.png",
+      "colour": "#fbc02d"
+    },
+    {
+      "name": "Trips",
+      "icon": "plane.png",
+      "colour": "#26a69a"
+    },
+    {
+      "name": "Gifts",
+      "icon": "gift.png",
+      "colour": "#e53935"
+    },
+    {
+      "name": "To sort",
+      "icon": "box.png",
+      "colour": "#90a4ae"
+    },
+    {
+      "name": "Income",
+      "icon": "coin.png",
+      "colour": "#9575cd",
+      "income": true
+    }
+  ],
+  "budgets": [
+    {
+      "name": "This week",
+      "amount": 200,
+      "period": "weekly",
+      "start": "2026-01-05",
+      "categories": [
+        "Groceries",
+        "Coffee",
+        "Eating out",
+        "Shopping"
+      ]
+    },
+    {
+      "name": "Bills",
+      "amount": 150,
+      "period": "monthly",
+      "start": "2026-01-01",
+      "categories": [
+        "Subscriptions",
+        "Transport"
+      ]
+    },
+    {
+      "name": "Summer trip",
+      "amount": 600,
+      "period": "custom",
+      "start": "2026-07-01",
+      "end": "2026-07-31T23:59:59",
+      "categories": [
+        "Trips"
+      ]
+    }
+  ],
+  "goals": [
+    {
+      "name": "Emergency fund",
+      "amount": 2000,
+      "icon": "safe-box.png"
+    }
+  ]
+}

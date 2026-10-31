@@ -80,6 +80,9 @@ Future<bool> signInGoogle(
     bool? drivePermissionsAttachments,
     bool? silentSignIn,
     Function()? next}) async {
+  // Budgie runs locally only: no Google sign-in, so Drive backup, sync and
+  // shared budgets (all gated on being signed in) stay off.
+  return false;
   // bool isConnected = false;
   if (await checkLockedFeatureIfInDemoMode(context) == false) return false;
   if (appStateSettings["emailScanning"] == false) gMailPermissions = false;

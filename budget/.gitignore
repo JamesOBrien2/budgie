@@ -55,3 +55,6 @@ keystore.jks
 
 /.firebase
 .firebase/
+
+# Budgie: personal first-run budget, never committed
+/web/seed.json
