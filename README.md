@@ -12,7 +12,7 @@
 1. Install Flutter **3.24.5** (`git clone -b 3.24.5 https://github.com/flutter/flutter.git`) and put its `bin` on your `PATH`.
 2. `cp budget/seed.example.json budget/web/seed.json` and edit it.
 3. `budget/install-local.sh`
-4. Open <http://127.0.0.1:8484> in Safari, then **File → Add to Dock**. Always open Budgie the same way: your data lives in that browser's storage. Back it up now and then from **Settings → Export Cashew Data File**.
+4. Open <http://127.0.0.1:8484> in Safari, then **File → Add to Dock**. Always open Budgie the same way: your data lives in that browser's storage. Back it up now and then from **Settings → Export Budgie Data File**.
 
 Rerun `install-local.sh` after changing the code. To start over with a fresh seed, clear the site's data in the browser.
 
