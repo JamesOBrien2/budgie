@@ -32,8 +32,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         except FileNotFoundError:
             return self.reply(204)
         url = config["worker"].rstrip("/") + "/next?" + urllib.parse.urlencode({"key": config["key"]})
+        # Cloudflare turns away Python's default user agent (error 1010).
+        req = urllib.request.Request(url, headers={"User-Agent": "Budgie"})
         try:
-            with urllib.request.urlopen(url, timeout=30) as res:
+            with urllib.request.urlopen(req, timeout=30) as res:
                 return self.reply(res.status, res.read())
         except Exception as e:
             self.log_error("inbox: %s", e)
