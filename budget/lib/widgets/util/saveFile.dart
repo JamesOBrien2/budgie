@@ -10,7 +10,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:universal_html/html.dart' show AnchorElement;
+import 'package:universal_html/html.dart'
+    show AnchorElement, Blob, Url, document;
 
 // On Android -> Save file to device downloads -> Save file to folder -> Share file
 // On Web -> Download file via web
@@ -33,13 +34,18 @@ Future<bool> saveFile({
   }
   if (kIsWeb) {
     try {
-      String base64String = base64Encode(
-          dataStore != null ? dataStore : utf8.encode(dataString!));
-      AnchorElement anchor = AnchorElement(
-          href: 'data:application/octet-stream;base64,$base64String')
+      // A Blob URL on a link that is in the page: Safari silently skips
+      // downloads of large data: URLs and of links outside the document.
+      String url = Url.createObjectUrlFromBlob(Blob(
+          [dataStore != null ? Uint8List.fromList(dataStore) : dataString!],
+          'application/octet-stream'));
+      AnchorElement anchor = AnchorElement(href: url)
         ..download = fileName
         ..style.display = 'none';
+      document.body!.append(anchor);
       anchor.click();
+      anchor.remove();
+      Future.delayed(Duration(minutes: 1), () => Url.revokeObjectUrl(url));
       openSnackbar(SnackbarMessage(
         title: successMessage,
         description: fileName,
