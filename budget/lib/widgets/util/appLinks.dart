@@ -317,27 +317,54 @@ Future addTransactionsFromJson(BuildContext context, String jsonString,
 // new tab instead would let two tabs overwrite each other's database.
 // Called directly rather than through executeAppLink, whose throttler would
 // drop back-to-back batches that the server has already handed over.
+// Returns how many transactions it added, or null if the inbox failed.
 bool _pullingBankInbox = false;
-Future pullBankInbox() async {
-  if (_pullingBankInbox || appStateSettings["hasOnboarded"] != true) return;
+Future<int?> pullBankInbox() async {
+  if (_pullingBankInbox || appStateSettings["hasOnboarded"] != true) return 0;
   _pullingBankInbox = true;
+  int added = 0;
   try {
     while (true) {
       BuildContext? context = navigatorKey.currentContext;
       if (context == null) break;
       http.Response res = await http.get(Uri.base.resolve("/inbox"));
-      if (res.statusCode != 200 || res.body.isEmpty) break;
+      if (res.statusCode == 204) break;
+      if (res.statusCode != 200) throw "inbox status " + res.statusCode.toString();
       // Moves between accounts are sent in the built-in correction category.
       await initializeBalanceCorrectionCategory();
       String? jsonString = Uri.parse(res.body).queryParameters["JSON"];
       if (jsonString == null) break;
-      await addTransactionsFromJson(context, jsonString);
+      await addTransactionsFromJson(context, jsonString,
+          onDebug: (res) => added += res == null ? 0 : 1);
     }
+    return added;
   } catch (e) {
     print("Bank inbox: " + e.toString());
+    return null;
   } finally {
     _pullingBankInbox = false;
   }
+}
+
+// "Sync now": the Worker checks Revolut, then this tab adds what it found.
+Future syncBankNow() async {
+  String message;
+  try {
+    http.Response res = await http.get(Uri.base.resolve("/sync"));
+    if (res.statusCode != 200) throw "status " + res.statusCode.toString();
+    int? added = await pullBankInbox();
+    if (added == null) throw "couldn't add the new transactions";
+    message = added == 0
+        ? "No new transactions"
+        : "Added " + added.toString() + " new transactions";
+  } catch (e) {
+    message = "Sync failed: " + e.toString();
+  }
+  openSnackbar(SnackbarMessage(
+    title: "Revolut sync",
+    description: message,
+    icon: Icons.sync_rounded,
+  ));
 }
 
 Future executeAppLink(BuildContext? context, Uri uri,
