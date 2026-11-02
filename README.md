@@ -1,3 +1,4 @@
+<p align="center"><img src="budget/assets/icon/budgie-coin.svg" width="128" alt="Budgie logo: a gold coin stamped with a budgie"></p>
 <h1 align="center"><b>Budgie</b></h1>
 
 **Budgie is a local-only fork of [Cashew](https://github.com/jameskokoska/Cashew)**, the open-source budgeting app by James Kokoska. It runs in your browser from your own Mac, keeps every transaction on your machine, and sets up your accounts, categories, budgets and goals from one file the first time it opens.
@@ -14,7 +15,7 @@
 3. `budget/install-local.sh`
 4. Open <http://127.0.0.1:8484> in Safari, then **File → Add to Dock**. Always open Budgie the same way: your data lives in that browser's storage. Back it up now and then from **Settings → Export Budgie Data File**.
 
-Rerun `install-local.sh` after changing the code. To start over with a fresh seed, clear the site's data in the browser.
+Rerun `install-local.sh` after changing the code. A Dock app keeps the icon it had when you added it. To pick up a new icon, export a Budgie Data File first, then remove the app and add it again, and import the file: a re-added app starts with empty storage. To start over with a fresh seed, clear the site's data in the browser.
 
 Budgie is GPL-3.0, like Cashew. Not affiliated with or endorsed by Cashew.
 
