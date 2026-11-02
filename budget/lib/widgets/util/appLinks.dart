@@ -4,6 +4,7 @@ import 'package:budget/database/tables.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/pages/addEmailTemplate.dart';
 import 'package:budget/pages/addTransactionPage.dart';
+import 'package:budget/pages/addWalletPage.dart';
 import 'package:budget/pages/autoTransactionsPageEmail.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/settings.dart';
@@ -19,6 +20,7 @@ import 'package:budget/widgets/transactionEntry/transactionLabel.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:app_links/app_links.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:budget/struct/commonDateFormats.dart';
 import 'package:budget/widgets/tableEntry.dart';
@@ -56,6 +58,18 @@ class _AppLinksWebState extends State<AppLinksWeb> {
     Future.delayed(Duration(milliseconds: 0), () {
       executeAppLink(navigatorKey.currentContext, Uri.base);
     });
+    // New bank transactions: once the app has loaded, then every few minutes.
+    Future.delayed(Duration(seconds: 3), pullBankInbox);
+    _bankInboxTimer =
+        Timer.periodic(Duration(minutes: 5), (_) => pullBankInbox());
+  }
+
+  Timer? _bankInboxTimer;
+
+  @override
+  void dispose() {
+    _bankInboxTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -274,6 +288,58 @@ Future processMessageToParse(
   }
 }
 
+Future addTransactionsFromJson(BuildContext context, String jsonString,
+    {Function(dynamic)? onDebug}) async {
+  try {
+    Map<String, dynamic> jsonData = json.decode(jsonString);
+    for (dynamic transactionObject in jsonData["transactions"]) {
+      Map<String, String> currentObject = {};
+      transactionObject.forEach((key, value) {
+        currentObject[key] = value.toString();
+      });
+      dynamic res =
+          await processAddTransactionFromParams(context, currentObject);
+      if (onDebug != null) onDebug(res);
+    }
+  } catch (e) {
+    openSnackbar(SnackbarMessage(
+      title: "error-parsing-json".tr(),
+      description: e.toString(),
+      icon: appStateSettings["outlinedIcons"]
+          ? Icons.warning_outlined
+          : Icons.warning_rounded,
+    ));
+  }
+}
+
+// Adds bank transactions waiting at the local server's /inbox (see
+// serve-local.py), batch by batch, inside this tab. Opening the links in a
+// new tab instead would let two tabs overwrite each other's database.
+// Called directly rather than through executeAppLink, whose throttler would
+// drop back-to-back batches that the server has already handed over.
+bool _pullingBankInbox = false;
+Future pullBankInbox() async {
+  if (_pullingBankInbox || appStateSettings["hasOnboarded"] != true) return;
+  _pullingBankInbox = true;
+  try {
+    while (true) {
+      BuildContext? context = navigatorKey.currentContext;
+      if (context == null) break;
+      http.Response res = await http.get(Uri.base.resolve("/inbox"));
+      if (res.statusCode != 200 || res.body.isEmpty) break;
+      // Moves between accounts are sent in the built-in correction category.
+      await initializeBalanceCorrectionCategory();
+      String? jsonString = Uri.parse(res.body).queryParameters["JSON"];
+      if (jsonString == null) break;
+      await addTransactionsFromJson(context, jsonString);
+    }
+  } catch (e) {
+    print("Bank inbox: " + e.toString());
+  } finally {
+    _pullingBankInbox = false;
+  }
+}
+
 Future executeAppLink(BuildContext? context, Uri uri,
     {Function(dynamic)? onDebug}) async {
   if (appStateSettings["hasOnboarded"] != true) return;
@@ -290,26 +356,8 @@ Future executeAppLink(BuildContext? context, Uri uri,
             appStateSettings["notificationScanningDebug"] == true) {
           processMessageToParse(context, params);
         } else if (params["JSON"] != null) {
-          try {
-            Map<String, dynamic> jsonData = json.decode(params["JSON"] ?? "");
-            for (dynamic transactionObject in jsonData["transactions"]) {
-              Map<String, String> currentObject = {};
-              transactionObject.forEach((key, value) {
-                currentObject[key] = value.toString();
-              });
-              dynamic res =
-                  await processAddTransactionFromParams(context, currentObject);
-              if (onDebug != null) onDebug(res);
-            }
-          } catch (e) {
-            openSnackbar(SnackbarMessage(
-              title: "error-parsing-json".tr(),
-              description: e.toString(),
-              icon: appStateSettings["outlinedIcons"]
-                  ? Icons.warning_outlined
-                  : Icons.warning_rounded,
-            ));
-          }
+          await addTransactionsFromJson(context, params["JSON"] ?? "",
+              onDebug: onDebug);
         } else {
           dynamic res = await processAddTransactionFromParams(context, params);
           if (onDebug != null) onDebug(res);
