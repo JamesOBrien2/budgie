@@ -29,8 +29,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:budget/widgets/scrollbarWrap.dart';
 import 'package:budget/widgets/slidingSelectorIncomeExpense.dart';
-import 'package:budget/widgets/linearGradientFadedEdges.dart';
-import 'package:budget/widgets/util/rightSideClipper.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 
@@ -214,27 +212,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
         isHomeScreenSectionEnabled(context, "showUsernameWelcomeBanner");
     bool useSmallBanner = showWelcomeBanner == false;
 
-    List<String> homePageSectionsFullScreenCenter = [];
-    List<String> homePageSectionsFullScreenLeft = [];
-    List<String> homePageSectionsFullScreenRight = [];
-
-    String section = "";
-
-    for (String item
-        in appStateSettings[getHomePageOrderSettingsKey(context)]) {
-      if (item == "ORDER:LEFT") {
-        section = item;
-      } else if (item == "ORDER:RIGHT") {
-        section = item;
-      } else if (section == "ORDER:LEFT") {
-        homePageSectionsFullScreenLeft.add(item);
-      } else if (section == "ORDER:RIGHT") {
-        homePageSectionsFullScreenRight.add(item);
-      } else {
-        homePageSectionsFullScreenCenter.add(item);
-      }
-    }
-
     return SwipeToSelectTransactions(
       listID: "0",
       child: Stack(
@@ -313,67 +290,12 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ),
                         )
                       : SizedBox(height: 5),
-                  // Not full screen
-                  if (enableDoubleColumn(context) != true) ...[
-                    for (String sectionKey in appStateSettings["homePageOrder"])
-                      homePageSections[sectionKey] ?? SizedBox.shrink(),
-                  ],
-                  // Full screen top section
-                  if (enableDoubleColumn(context) == true) ...[
-                    for (String sectionKey
-                        in appStateSettings["homePageOrderFullScreen"])
-                      if (homePageSectionsFullScreenCenter.contains(sectionKey))
-                        homePageSections[sectionKey] ?? SizedBox.shrink()
-                  ],
-                  // Full screen bottom split section
-                  if (enableDoubleColumn(context) == true)
-                    LayoutBuilder(builder: (context, constraints) {
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Flexible(
-                            child: Column(
-                              children: [
-                                for (String sectionKey in appStateSettings[
-                                    "homePageOrderFullScreen"])
-                                  if (homePageSectionsFullScreenLeft
-                                      .contains(sectionKey))
-                                    LinearGradientFadedEdges(
-                                      enableStart: false,
-                                      enableBottom: false,
-                                      enableTop: false,
-                                      child: ClipRRect(
-                                        clipper: RightSideClipper(),
-                                        child: homePageSections[sectionKey] ??
-                                            SizedBox.shrink(),
-                                      ),
-                                    ),
-                              ],
-                            ),
-                          ),
-                          Flexible(
-                            child: Column(
-                              children: [
-                                for (String sectionKey in appStateSettings[
-                                    "homePageOrderFullScreen"])
-                                  if (homePageSectionsFullScreenRight
-                                      .contains(sectionKey))
-                                    LinearGradientFadedEdges(
-                                      enableEnd: false,
-                                      enableBottom: false,
-                                      enableTop: false,
-                                      child: ClipRRect(
-                                        clipper: RightSideClipper(),
-                                        child: homePageSections[sectionKey] ??
-                                            SizedBox.shrink(),
-                                      ),
-                                    ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    }),
+                  // One column on every screen width, so sections never sit
+                  // side by side and cover each other. The left/right panel
+                  // markers in the wide-screen order are skipped.
+                  for (String sectionKey
+                      in appStateSettings[getHomePageOrderSettingsKey(context)])
+                    homePageSections[sectionKey] ?? SizedBox.shrink(),
                   SizedBox(
                     height: enableDoubleColumn(context) == true
                         ? 40

@@ -448,12 +448,6 @@ class _EditHomePageState extends State<EditHomePage> {
         subtitleSize:
             appStateSettings["showExtraInfoText"] == false ? null : 10,
         slivers: [
-          if (enableDoubleColumn(context))
-            SliverToBoxAdapter(
-              child: PanelSectionSeparator(
-                orderKey: "ORDER:CENTER",
-              ),
-            ),
           SliverToBoxAdapter(
             child: HomePageEditRowEntryUsername(
               iconData: appStateSettings["outlinedIcons"]
@@ -492,11 +486,10 @@ class _EditHomePageState extends State<EditHomePage> {
                 );
               String key = keyOrder[index];
 
+              // Panel markers from the old two-column layout: kept in the
+              // saved order, but the home page is one column now.
               if (["ORDER:LEFT", "ORDER:RIGHT"].contains(key)) {
-                return PanelSectionSeparator(
-                  orderKey: key,
-                  key: ValueKey(key),
-                );
+                return Container(key: ValueKey(key));
               }
 
               if (editHomePageItems[key] == null)
@@ -607,49 +600,6 @@ class HomePageEditRowEntry extends StatelessWidget {
       index: index,
       onTap: onTap ?? () => toggleSwitch(),
       openPage: Container(),
-    );
-  }
-}
-
-class PanelSectionSeparator extends StatelessWidget {
-  const PanelSectionSeparator({required this.orderKey, super.key});
-  final String orderKey;
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.only(
-          start: 15, end: 15, top: 20, bottom: 10),
-      child: Row(
-        children: [
-          if (orderKey == "ORDER:LEFT")
-            TextFont(
-              text: "left-panel".tr(),
-              fontSize: 16,
-              textAlign: TextAlign.start,
-            ),
-          Expanded(
-              child: HorizontalBreak(
-            padding: const EdgeInsetsDirectional.all(15),
-          )),
-          if (orderKey == "ORDER:CENTER")
-            TextFont(
-              text: "top-center".tr(),
-              fontSize: 16,
-              textAlign: TextAlign.end,
-            ),
-          if (orderKey == "ORDER:CENTER")
-            Expanded(
-                child: HorizontalBreak(
-              padding: const EdgeInsetsDirectional.all(15),
-            )),
-          if (orderKey == "ORDER:RIGHT")
-            TextFont(
-              text: "right-panel".tr(),
-              fontSize: 16,
-              textAlign: TextAlign.end,
-            ),
-        ],
-      ),
     );
   }
 }
