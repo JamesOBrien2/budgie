@@ -15,7 +15,7 @@
 3. `budget/install-local.sh`
 4. Open <http://127.0.0.1:8484> in Safari, then **File → Add to Dock**. Always open Budgie the same way: your data lives in that browser's storage. Back it up now and then from **Settings → Export Budgie Data File**.
 
-Rerun `install-local.sh` after changing the code. A Dock app keeps the icon it had when you added it, so after an icon change remove it from the Dock and add it again. To start over with a fresh seed, clear the site's data in the browser.
+Rerun `install-local.sh` after changing the code. A Dock app keeps the icon it had when you added it. To pick up a new icon, export a Budgie Data File first, then remove the app and add it again, and import the file: a re-added app starts with empty storage. To start over with a fresh seed, clear the site's data in the browser.
 
 Budgie is GPL-3.0, like Cashew. Not affiliated with or endorsed by Cashew.
 
