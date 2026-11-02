@@ -4,6 +4,7 @@ import 'package:budget/colors.dart';
 import 'package:budget/database/tables.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/pages/addTransactionPage.dart';
+import 'package:budget/pages/addWalletPage.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/widgets/animatedExpanded.dart';
@@ -911,10 +912,17 @@ class _ImportingEntriesPopupState extends State<ImportingEntriesPopup> {
     String categoryFk = "0";
     TransactionCategory selectedCategory;
     try {
-      selectedCategory = await database.getCategoryInstanceGivenName(
-          row[assignedColumns["category"]!["setHeaderIndex"]]
-              .toString()
-              .trim());
+      String categoryName =
+          row[assignedColumns["category"]!["setHeaderIndex"]].toString().trim();
+      // Moves between accounts go to the built-in correction category, which
+      // budgets and spending totals leave out.
+      if (categoryName.toLowerCase() ==
+          "default-category-account-amount-balancing".tr().toLowerCase()) {
+        selectedCategory = await initializeBalanceCorrectionCategory();
+      } else {
+        selectedCategory =
+            await database.getCategoryInstanceGivenName(categoryName);
+      }
     } catch (e) {
       try {
         selectedCategory = await database.getCategoryInstanceGivenNameTrim(
