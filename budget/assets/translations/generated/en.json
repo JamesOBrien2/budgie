@@ -1180,5 +1180,16 @@
   "import-warning": "Import Warning",
   "import-warning-description": "Import may fail! Please make sure you have selected a valid Budgie [.sqlite] or [.sql] backup file",
   "duplicate-budget-question": "Duplicate Budget?",
-  "duplicate-budget": "Duplicate Budget"
+  "duplicate-budget": "Duplicate Budget",
+  "spending-pace": "Spending Pace",
+  "spent-so-far": "Spent so far",
+  "typical-by-now": "Typical by now",
+  "on-pace-for": "On pace for",
+  "typical-period": "Typical full period",
+  "daily-average": "Daily average so far",
+  "daily-allowance": "Per day left to stay typical",
+  "expected-income": "Expected income",
+  "left-to-save": "Left to save at this rate",
+  "include-to-sort-income": "Count \"To sort\" as income",
+  "include-to-sort-income-description": "Include income in the \"To sort\" category in the expected income on All Spending"
 }

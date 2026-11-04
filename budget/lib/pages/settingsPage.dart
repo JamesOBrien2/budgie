@@ -463,6 +463,18 @@ class SettingsPageContent extends StatelessWidget {
         // EnterName(),
         SettingsHeader(title: "preferences".tr()),
 
+        SettingsContainerSwitch(
+          title: "include-to-sort-income".tr(),
+          description: "include-to-sort-income-description".tr(),
+          icon: appStateSettings["outlinedIcons"]
+              ? Icons.inbox_outlined
+              : Icons.inbox_rounded,
+          initialValue: appStateSettings["spendingPaceIncludeToSort"] == true,
+          onSwitched: (value) =>
+              updateSettings("spendingPaceIncludeToSort", value,
+                  updateGlobalState: true),
+        ),
+
         SettingsContainerOpenPage(
           openPage: EditHomePage(),
           title: "edit-home-page".tr(),
