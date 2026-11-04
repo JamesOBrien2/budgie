@@ -13,6 +13,7 @@ import 'package:budget/pages/upcomingOverdueTransactionsPage.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/struct/spendingSummaryHelper.dart';
+import 'package:budget/struct/spendingPace.dart';
 import 'package:budget/widgets/animatedExpanded.dart';
 import 'package:budget/widgets/budgetHistoryLineGraph.dart';
 import 'package:budget/widgets/button.dart';
@@ -711,6 +712,17 @@ class WalletDetailsPageState extends State<WalletDetailsPage>
                     Expanded(child: totalNetContainer),
                   ],
                 ),
+              ),
+            if (widget.wallet == null && selectedDateTimeRange == null)
+              Padding(
+                padding: EdgeInsetsDirectional.only(
+                  bottom: 13,
+                  start: 13 + getHorizontalPaddingConstrained(context,
+                      enabled: enableDoubleColumn(context) == false),
+                  end: 13 + getHorizontalPaddingConstrained(context,
+                      enabled: enableDoubleColumn(context) == false),
+                ),
+                child: SpendingPaceCard(searchFilters: searchFilters),
               ),
             if (widget.wallet != null)
               Padding(
@@ -2986,6 +2998,209 @@ class AmountSpentEntryRow extends StatelessWidget {
                 );
               },
             ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// Spending this period against earlier periods at the same day, and where it
+// ends up if the current rate holds. Follows the History tab's cycle.
+class SpendingPaceCard extends StatefulWidget {
+  const SpendingPaceCard({required this.searchFilters, super.key});
+  final SearchFilters? searchFilters;
+
+  @override
+  State<SpendingPaceCard> createState() => _SpendingPaceCardState();
+}
+
+class _SpendingPaceCardState extends State<SpendingPaceCard> {
+  static const int pastPeriods = 6;
+  late int daysElapsed;
+  late int periodDays;
+  // Expenses: [so far, then (same stage, full period) per past period],
+  // then income: [so far, then full period per past period].
+  Stream<List<TotalWithCount?>>? totals;
+
+  @override
+  void initState() {
+    super.initState();
+    loadTotals();
+  }
+
+  @override
+  void didUpdateWidget(covariant SpendingPaceCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    loadTotals();
+  }
+
+  Stream<TotalWithCount?> totalIn(DateTimeRange range,
+          {bool income = false, List<String>? categoryPks}) =>
+      database.watchTotalWithCountOfWallet(
+        isIncome: income,
+        onlyIncomeAndExpense: true,
+        allWallets: Provider.of<AllWallets>(context, listen: false),
+        followCustomPeriodCycle: false,
+        searchFilters: (widget.searchFilters ?? SearchFilters())
+            .copyWith(dateTimeRange: range, categoryPks: categoryPks),
+      );
+
+  // "To sort" holds bank imports not yet categorised (transfers, refunds), so
+  // expected income leaves it out unless the setting includes it. Null keeps
+  // the page's category filter as is.
+  Future<List<String>?> incomeCategoryPks() async {
+    if (appStateSettings["spendingPaceIncludeToSort"] == true) return null;
+    List<TransactionCategory> all = await database.getAllCategories();
+    String? toSort = all
+        .where((c) => c.name.trim().toLowerCase() == "to sort")
+        .firstOrNull
+        ?.categoryPk;
+    if (toSort == null) return null;
+    List<String> filtered = widget.searchFilters?.categoryPks ?? [];
+    List<String> pks = (filtered.isNotEmpty
+            ? filtered
+            : all.map((c) => c.categoryPk).toList())
+        .where((pk) => pk != toSort)
+        .toList();
+    // Filtering on "To sort" alone: an empty list would mean no filter.
+    return pks.isEmpty ? null : pks;
+  }
+
+  Future<void> loadTotals() async {
+    List<String>? incomePks = await incomeCategoryPks();
+    if (!mounted) return;
+    DateTime now = DateTime.now();
+    DateTimeRange period = getCycleDateTimeRange("");
+    daysElapsed = inclusiveDays(period.start, now);
+    periodDays = inclusiveDays(period.start, period.end);
+    DateTimeRange soFar = DateTimeRange(start: period.start, end: now);
+    List<DateTimeRange> pasts = [
+      for (int i = 1; i <= pastPeriods; i++)
+        getCycleDateTimeRange("",
+            currentDate: getCycleDatePastToDetermineBudgetDate("", i))
+    ];
+    setState(() => totals = StreamZip([
+      totalIn(soFar),
+      for (DateTimeRange past in pasts) ...[
+        totalIn(DateTimeRange(
+            start: past.start,
+            end: sameStageEnd(past.start, past.end, daysElapsed))),
+        totalIn(past),
+      ],
+      totalIn(soFar, income: true, categoryPks: incomePks),
+      for (DateTimeRange past in pasts)
+        totalIn(past, income: true, categoryPks: incomePks),
+    ]));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<TotalWithCount?>>(
+      stream: totals,
+      builder: (context, snapshot) {
+        List<double> t = [
+          for (TotalWithCount? x in snapshot.data ?? []) (x?.total ?? 0).abs()
+        ];
+        if (t.isEmpty) return SizedBox.shrink();
+        int incomeStart = 1 + 2 * pastPeriods;
+        double spent = t[0];
+        List<double> pastSoFar = [
+          for (int i = 1; i < incomeStart; i += 2) t[i]
+        ];
+        List<double> pastFull = [
+          for (int i = 2; i < incomeStart; i += 2) t[i]
+        ];
+        double? typicalNow = typicalByNow(pastSoFar, pastFull);
+        double? typicalFull = typicalFullPeriod(pastFull);
+        if (typicalNow == null && spent == 0) return SizedBox.shrink();
+        double projected = projectedTotal(spent, daysElapsed, periodDays);
+        double income = expectedIncome(t[incomeStart],
+            typicalFullPeriod(t.sublist(incomeStart + 1)));
+        double dailyAverage = spent / daysElapsed;
+        double? allowance = typicalFull == null
+            ? null
+            : dailyAllowance(typicalFull, spent, periodDays - daysElapsed);
+        AllWallets allWallets = Provider.of<AllWallets>(context);
+
+        String difference(double amount, double? typical) =>
+            typical == null || typical == 0
+                ? ""
+                : " (" +
+                    (amount >= typical ? "+" : "−") +
+                    ((amount - typical).abs() / typical * 100)
+                        .round()
+                        .toString() +
+                    "%)";
+
+        // good: green when true, red when false, plain when null.
+        Widget row(String label, double amount,
+            {bool? good, String extra = ""}) {
+          return Padding(
+            padding: const EdgeInsetsDirectional.symmetric(vertical: 3),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(child: TextFont(text: label, fontSize: 16)),
+                TextFont(
+                  text: convertToMoney(allWallets, amount) + extra,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  textColor: good == null
+                      ? getColor(context, "black")
+                      : good
+                          ? getColor(context, "incomeAmount")
+                          : getColor(context, "expenseAmount"),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return Container(
+          padding: const EdgeInsetsDirectional.symmetric(
+              horizontal: 20, vertical: 15),
+          decoration: BoxDecoration(
+            color: getColor(context, "lightDarkAccentHeavyLight"),
+            boxShadow: boxShadowCheck(boxShadowGeneral(context)),
+            borderRadius: BorderRadiusDirectional.circular(15),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextFont(
+                text: "spending-pace".tr(),
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+              TextFont(
+                text: "day".tr() + " $daysElapsed / $periodDays",
+                fontSize: 14,
+                textColor: getColor(context, "textLight"),
+              ),
+              SizedBox(height: 8),
+              row("spent-so-far".tr(), spent,
+                  good: typicalNow == null ? null : spent <= typicalNow,
+                  extra: difference(spent, typicalNow)),
+              if (typicalNow != null)
+                row("typical-by-now".tr(), typicalNow),
+              row("on-pace-for".tr(), projected,
+                  good: typicalFull == null ? null : projected <= typicalFull,
+                  extra: difference(projected, typicalFull)),
+              if (typicalFull != null)
+                row("typical-period".tr(), typicalFull),
+              SizedBox(height: 8),
+              row("daily-average".tr(), dailyAverage,
+                  good: allowance == null ? null : dailyAverage <= allowance),
+              if (allowance != null)
+                row("daily-allowance".tr(), allowance),
+              if (income > 0) ...[
+                SizedBox(height: 8),
+                row("expected-income".tr(), income),
+                row("left-to-save".tr(), income - projected,
+                    good: income >= projected),
+              ],
+            ],
           ),
         );
       },

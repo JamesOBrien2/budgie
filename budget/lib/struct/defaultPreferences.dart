@@ -211,6 +211,7 @@ Future<Map<String, dynamic>> getDefaultPreferences() async {
     "numberFormatCurrencyFirst": true,
     "shortNumberFormat": null, //null, compact
     "netAllSpendingTotal": false,
+    "spendingPaceIncludeToSort": false,
     "netSpendingDayTotal": false,
     "extraZerosButton": null, //will be null, 00 or 000
     "numberPadFormat": NumberPadFormat.format123.index,

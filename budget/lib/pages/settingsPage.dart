@@ -36,6 +36,8 @@ import 'package:budget/widgets/selectColor.dart';
 import 'package:budget/widgets/settingsContainers.dart';
 import 'package:budget/pages/walletDetailsPage.dart';
 import 'package:budget/widgets/tappable.dart';
+import 'package:budget/widgets/util/appLinks.dart' show syncBankNow;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:budget/widgets/textWidgets.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -461,6 +463,18 @@ class SettingsPageContent extends StatelessWidget {
         // EnterName(),
         SettingsHeader(title: "preferences".tr()),
 
+        SettingsContainerSwitch(
+          title: "include-to-sort-income".tr(),
+          description: "include-to-sort-income-description".tr(),
+          icon: appStateSettings["outlinedIcons"]
+              ? Icons.inbox_outlined
+              : Icons.inbox_rounded,
+          initialValue: appStateSettings["spendingPaceIncludeToSort"] == true,
+          onSwitched: (value) =>
+              updateSettings("spendingPaceIncludeToSort", value,
+                  updateGlobalState: true),
+        ),
+
         SettingsContainerOpenPage(
           openPage: EditHomePage(),
           title: "edit-home-page".tr(),
@@ -525,6 +539,14 @@ class SettingsPageContent extends StatelessWidget {
         ),
 
         SettingsHeader(title: "import-and-export".tr()),
+
+        if (kIsWeb)
+          SettingsContainer(
+            title: "Sync Revolut now",
+            description: "Check the bank for new transactions",
+            icon: Icons.sync_rounded,
+            onTap: syncBankNow,
+          ),
 
         ExportCSV(),
 

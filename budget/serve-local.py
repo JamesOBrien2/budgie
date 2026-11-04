@@ -18,27 +18,30 @@ SYNC_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sync.jso
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
+        # /inbox hands the open Budgie tab the next batch of bank transactions
+        # (an addTransaction app link) from the sync Worker, or 204 when none
+        # wait. Budgie adds them itself, so no second tab writes over its
+        # database. /sync makes the Worker check Revolut now ("Sync now").
         if self.path == "/inbox":
-            return self.inbox()
+            return self.worker("/next")
+        if self.path == "/sync":
+            return self.worker("/sync")
         super().do_GET()
 
-    # Hands the open Budgie tab the next batch of bank transactions (an
-    # addTransaction app link) from the sync Worker, or 204 when none wait.
-    # Budgie adds them itself, so no second tab writes over its database.
-    def inbox(self):
+    def worker(self, endpoint):
         try:
             with open(SYNC_CONFIG) as f:
                 config = json.load(f)
         except FileNotFoundError:
             return self.reply(204)
-        url = config["worker"].rstrip("/") + "/next?" + urllib.parse.urlencode({"key": config["key"]})
+        url = config["worker"].rstrip("/") + endpoint + "?" + urllib.parse.urlencode({"key": config["key"]})
         # Cloudflare turns away Python's default user agent (error 1010).
         req = urllib.request.Request(url, headers={"User-Agent": "Budgie"})
         try:
             with urllib.request.urlopen(req, timeout=30) as res:
                 return self.reply(res.status, res.read())
         except Exception as e:
-            self.log_error("inbox: %s", e)
+            self.log_error("%s: %s", endpoint, e)
             return self.reply(502)
 
     def reply(self, status, body=b""):
